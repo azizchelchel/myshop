@@ -1,0 +1,16 @@
+<%- include('parts/header') %> 
+<%- include('parts/navbar') %> 
+
+<% products.map(e=>{ %>
+    <li>Name : <%-  e.name%></li>
+    <li>image : <%-  e.image %> </li>
+    <li>price : <%-  e.price %> </li>
+    <li>description : <%-  e.description %> </li>
+    <li>category : <%-  e.category %> </li>
+    <% } )%> 
+<%- include('parts/footer') %> 
+    
+    
+
+
+      
