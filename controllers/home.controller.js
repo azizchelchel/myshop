@@ -1,12 +1,13 @@
-const productsModel=require('../models/products.model');
+import  getAllProducts  from '../models/products.model.js';
 
-exports.getHome=(req,res,next)=>{
+const getHome=(req,res,next)=>{
 
     // get products from db 
     
-    productsModel.getAllProducts().then(products=>{
+    getAllProducts().then(
+        
+        products=>{
 
-       
         res.render('index',
         {
             products:products
@@ -19,5 +20,6 @@ exports.getHome=(req,res,next)=>{
         
 })
 
-
 }
+
+export default getHome;

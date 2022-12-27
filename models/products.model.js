@@ -1,14 +1,10 @@
-const mongoose=require('mongoose');
+import { set, Schema, model, connect, disconnect } from 'mongoose';
 
-mongoose.set('strictQuery', true);
- 
-db_url='mongodb+srv://aziz:123@myshop-cluster.gzypivq.mongodb.net/myshop?retryWrites=true&w=majority';
+import 'dotenv/config' ;
 
+set('strictQuery', true);
 
-//    mongodb+srv://aziz:123@myshop-cluster.gzypivq.mongodb.net/myshop?retryWrites=true&w=majority
-
-
-const productSchema=mongoose.Schema({
+const productSchema=Schema({
 
     name:String,
     image:String,
@@ -18,63 +14,36 @@ const productSchema=mongoose.Schema({
 });
 
 
-const ProductModel=mongoose.model('product', productSchema);
+const ProductModel=model('product', productSchema);
 
-
-exports.getAllProducts=()=>{
-
-    // connect to db
-
-    // mongoose.connect(db_url)
-
-    // .then(() => {
-
-    //    return ProductModel.find({})   
-
-    // })
-
-    // .then(products=>{
-
-    //         mongoose.disconnect();
-
-    //     })        
-    
-    // create a customise promise
-    
-    // ************** but this mthod has problem wich is how to send results and then disconnect*****
+const getAllProducts=()=>{
 
     return new Promise((resolve,reject) => {
 
-         // connect to db
+        // connect to db
       
-    mongoose.connect(db_url)
+        connect(process.env.db_url.toString())
 
-    .then(() => {
-
-
+        .then(() => {
         
         return ProductModel.find({})
-
-        
        
-    })
+        })
 
-    .then(products=>{
+        .then(products=>{
 
-            mongoose.disconnect();
-
-           
+            disconnect();
 
             resolve(products);
 
         })
 
-    .catch((err) => reject(err ))  
+        .catch((err) => reject(err ))  
         
     })
 
+   
 
 }
 
-
-
+export default getAllProducts;

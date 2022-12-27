@@ -1,11 +1,10 @@
-router=require('express').Router();
+import  getHome  from '../controllers/home.controller.js';
+import express from "express"
 
-const homeController=require('../controllers/home.controller');
-
-
-router.get('/', homeController.getHome )
+const router=express.Router();
 
 
-module.exports=router;
 
+router.get('/', getHome )
 
+export default router;

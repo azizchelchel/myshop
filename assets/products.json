@@ -10,4 +10,23 @@
   "price": 100,
   "description": "laser",
   "categorie": "info"
-}]
+}
+,{
+  "name": "print2",
+  "image": "printer1.jpeg",
+  "price": 100,
+  "description": "laser",
+  "categorie": "info"
+}
+,{
+  "name": "print3",
+  "image": "printer1.jpeg",
+  "price": 200,
+  "description": "mat",
+  "categorie": "info"
+}
+
+
+
+
+]

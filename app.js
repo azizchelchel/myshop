@@ -1,23 +1,30 @@
 
-const express=require ('express');
+import express, { static as staticMiddleware} from 'express';
+
+import  path , { join } from 'path';
+
+import pkg from 'body-parser';
+
+import homeRouter from './routes/home.route.js';
 
 const app=express();
 
 const PORT=process.env.PORT||3000;
 
-const path=require('path')
+const __dirname = path.resolve();
 
-app.use(express.static(path.join(__dirname,'assets')));
+app.use(staticMiddleware(join(__dirname,'assets')));
+
+app.use(staticMiddleware(join(__dirname,'images')));
 
 app.set('view engine', 'ejs'); 
 
-const bodyParser=require('body-parser');
-
 app.set('views','views');
 
-const homeRouter=require('./routes/home.route')
+const { urlencoded } = pkg;
 
-app.use(bodyParser.urlencoded({extended:true}))
+app.use(urlencoded({extended:true}))
+
 
 
 
@@ -28,7 +35,8 @@ app.use('/', homeRouter);
 
 
 
-app.listen(PORT, (err) => { 
-    if(err) console.log('server is running!!!',err);
-    else console.log(`server is running on http://localhost:${PORT}`);
+app.listen(PORT, () => { 
+
+    console.log(`server is running on http://localhost:${PORT}`);
+
  })
