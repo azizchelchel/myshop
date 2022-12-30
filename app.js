@@ -7,6 +7,8 @@ import pkg from 'body-parser';
 
 import homeRouter from './routes/home.route.js';
 
+import productRouter from './routes/product.route.js';
+
 const app=express();
 
 const PORT=process.env.PORT||3000;
@@ -29,6 +31,9 @@ app.use(urlencoded({extended:true}))
 
 
 app.use('/', homeRouter);
+
+
+app.get('/product/:id', productRouter)
 
 
 

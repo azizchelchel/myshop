@@ -2,7 +2,8 @@ import { set, Schema, model, connect, disconnect } from 'mongoose';
 
 import 'dotenv/config' ;
 
-set('strictQuery', true);
+set('strictQuery', true);   
+
 
 const productSchema=Schema({
 
@@ -14,9 +15,9 @@ const productSchema=Schema({
 });
 
 
-const productModel=model('product', productSchema);
+// const productModel=model('product', productSchema);
 
-const getProducts=(category)=>{
+const findProduct=(id)=>{
 
     return new Promise((resolve,reject) => {
 
@@ -25,17 +26,16 @@ const getProducts=(category)=>{
         connect(process.env.db_url.toString())
 
         .then(() => {
-            if (category==='all' || category=== undefined) return productModel.find();
-         
-            return productModel.find({categorie:category})
+        
+        return productModel.findOne({id:id})
        
         })
 
-        .then(products=>{
+        .then(product=>{
 
             disconnect();
 
-            resolve(products);
+            resolve(product);
 
         })
 
@@ -47,4 +47,4 @@ const getProducts=(category)=>{
 
 }
 
-export default getProducts;
+export default findProduct;

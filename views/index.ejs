@@ -1,13 +1,39 @@
 <%- include('parts/header') %> 
 <%- include('parts/navbar') %> 
+<div class="container">
+  <form action="/"  method="GET">
+    <select name="category" id="">
+      <option value="all">ALL</option>
+      <option value="cars">CARS</option>
+      <option value="clothes">CLOTHES</option>
+      <option value="info">INFO</option>
+      <option value="phones">PHONES</option>
+    </select>
+    <input type="submit" value="filter" class="btn btn-secondary">
+  </form>
+    <div class="row">
+        <% for (let product of products) { %>
+            <div class="col  col-12  col-md-6 col-lg-4 col-xl-3" >
+                <div class="card" style="width: 18rem;">
+                    <img src="<%- product.image %>" class="card-img-top" alt="...">
+                    <div class="card-body">
+                      <h5 class="card-title">
+                        <a href="/product/<%- product._id %>" ><%- product.name %></a>
+                        <p>Price: <%- product.price %> $</p>
+                      </h5>
+                      <form action="/cart" method="POST">
+                        <input type="number" name="amount" class="form-control">
+                        <input type="submit" value="add to cart"  class="btn btn-primary">
+                      </form>
+                      
+                    </div>
+                  </div>
+            </div>
+        <% } %> 
+    </div>
+    </div>
 
-<% products.map(e=>{ %>
-    <li>Name : <%-  e.name%></li>
-    <li>image : <%-  e.image %> </li>
-    <li>price : <%-  e.price %> </li>
-    <li>description : <%-  e.description %> </li>
-    <li>category : <%-  e.category %> </li>
-    <% } )%> 
+
 <%- include('parts/footer') %> 
     
     

@@ -7,4 +7,4 @@ const router=express.Router();
 
 router.get('/', getHome )
 
-export default router;
+export default router; 
