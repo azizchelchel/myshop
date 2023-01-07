@@ -1,15 +1,19 @@
 import express from "express";
 
-import getProduct from "../controllers/product.controller.js";
+import {getProductById,getFirstProduct} from "../controllers/product.controller.js";
 
 const router=express.Router();
 
 
-console.log('route')
+// get first product in db for "/product/"
+
+router.get('/',getFirstProduct )
 
 
-router.get('/product/:id', getProduct )
+// get product by id
 
-console.log('apres')
+router.get('/:id', getProductById )
+
+
 
 export default router;

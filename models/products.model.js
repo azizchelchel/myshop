@@ -47,4 +47,4 @@ const getProducts=(category)=>{
 
 }
 
-export default getProducts;
+export {getProducts,productModel};

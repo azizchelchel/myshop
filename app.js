@@ -9,6 +9,16 @@ import homeRouter from './routes/home.route.js';
 
 import productRouter from './routes/product.route.js';
 
+import authRouter from  './routes/auth.route.js'
+
+import bcrypt from 'bcrypt';
+
+import session from 'express-session';
+
+import SessionStore from 'connect-mongodb-session';
+
+const myMongoDbStore=SessionStore(session);
+
 const app=express();
 
 const PORT=process.env.PORT||3000;
@@ -25,19 +35,34 @@ app.set('views','views');
 
 const { urlencoded } = pkg;
 
+const STORE=new myMongoDbStore({
+    uri: process.env.db_url,
+    collection:'sessions'
+})
+
+app.use(session({
+    secret:process.env.myDbSecret,
+    saveUninitialized:false,
+    resave:false,
+    cookie:{                              // if we want to let it 
+        maxage:60*1000  //one hour     // default ie at the closing of brouser
+    },                                    // we dont mention cookie field
+    store:STORE  //if not mentionned default is in the memory if the server(RAM)
+
+}))
+
 app.use(urlencoded({extended:true}))
+
+
+app.use('/product', productRouter);
+
+
+app.use('/auth', authRouter);
 
 
 
 
 app.use('/', homeRouter);
-
-
-app.get('/product/:id', productRouter)
-
-
-
-
 
 
 app.listen(PORT, () => { 

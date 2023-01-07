@@ -4,20 +4,11 @@ import 'dotenv/config' ;
 
 set('strictQuery', true);   
 
+import {productModel} from './products.model.js'
 
-const productSchema=Schema({
+// find product by id in db
 
-    name:String,
-    image:String,
-    price:Number,
-    description:String,
-    categorie:String
-});
-
-
-// const productModel=model('product', productSchema);
-
-const findProduct=(id)=>{
+const findProductById=(id)=>{
 
     return new Promise((resolve,reject) => {
 
@@ -27,11 +18,51 @@ const findProduct=(id)=>{
 
         .then(() => {
         
-        return productModel.findOne({id:id})
+        return productModel.findById({_id:id})
        
         })
 
         .then(product=>{
+
+
+            disconnect();
+
+            resolve(product);
+
+        })
+
+        .catch(
+            (err) => reject(err )
+            )  
+        
+    })
+
+   
+
+}
+
+
+
+// find the first product in db
+
+const findFirstProduct=(_id)=>{
+
+    return new Promise((resolve,reject) => {
+
+        // connect to db
+      
+        connect(process.env.db_url.toString())
+
+        .then(
+            
+            () => {
+        
+                return productModel.findOne({});
+       
+            }
+        )
+        .then(product=>{
+
 
             disconnect();
 
@@ -47,4 +78,5 @@ const findProduct=(id)=>{
 
 }
 
-export default findProduct;
+
+export  {findProductById,findFirstProduct};

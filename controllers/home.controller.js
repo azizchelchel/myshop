@@ -1,4 +1,4 @@
-import  getProducts  from '../models/products.model.js';
+import {getProducts} from '../models/products.model.js';
 
 const getHome=(req,res,next)=>{
 

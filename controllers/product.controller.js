@@ -1,9 +1,9 @@
 
-import  findProduct from '../models/product.model.js';
+import  {findProductById,findFirstProduct} from '../models/product.model.js';
 
-const getProduct=(req,res,next)=>{
+const getProductById=(req,res,next)=>{
 
-    // get the product id
+    // get the product id from params
 
     const productId=req.params.id;
 
@@ -11,11 +11,11 @@ const getProduct=(req,res,next)=>{
 
     // get product from db 
     
-    findProduct(productId).then(
+    findProductById(productId).then(
         
         product=>{
 
-        res.render('product',
+        res.render('productDetails',
         {
             
             product:product
@@ -30,4 +30,32 @@ const getProduct=(req,res,next)=>{
 
 }
 
-export default getProduct;
+const getFirstProduct =(req,res,next)=>{
+
+    // get the product id from params
+
+    const productId=req.params.id;
+
+
+    // get product from db 
+    
+    findFirstProduct(productId).then(
+        
+        product=>{
+
+        res.render('productDetails',
+        {
+            
+            product:product
+        }
+        )
+    })
+    .catch((err) => {
+
+    console.log('error', err)
+        
+})
+
+}
+
+export {getProductById,getFirstProduct};

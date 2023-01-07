@@ -1,0 +1,39 @@
+<%- include('parts/header') %> 
+<%- include('parts/navbar') %> 
+
+<div class="container">
+
+  <% if (!product) { %>
+
+    <div class="alert alert-danger">
+      there is no product to display!
+    </div>
+    
+  <% } else { %> 
+
+ 
+
+    <div class="row">
+        
+      <div class="col   col-12 col-sm-6">
+          <img src="/<%- product.image %>"  >
+          <form action="/cart" method="POST">
+              <input type="number" name="amount" id="">
+              <input type="submit" value="add to cart">
+          </form>
+      
+        
+      </div>
+      <div class="col  col-12 col-sm-6">
+        <h1><%- product.name %> </h1>
+        <h5><%- product.price %></h5>+
+        <p><%- product.description %></p>
+      </div>
+    </div>
+
+  <% } %> 
+
+    
+</div>   
+
+<%- include('parts/footer') %> 
