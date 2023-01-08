@@ -34,22 +34,20 @@ const checkAndInsertUser= (user)=>{
 
         .then(
 
-                () => {
-                    console.log('connected to db ');
+            () => {
 
-                    return userModel.findOne({ email: user.email })
+                return userModel.findOne({ email: user.email })
                     
-                }
+            }
         )
         .then(
 
             (foundUser) => {
 
                 if (foundUser) {
-                    console.log('found')
-                   
+                        
                     disconnect(); 
-                    reject('found');
+                    reject('used email, try another');
 
                 } else {
 
@@ -115,45 +113,39 @@ const checkEmailPassword=(email, password)=>{
                     userModel.findOne({email:email}).then(
                         (foundUser) => {
 
-                            console.log('the found user is'+foundUser);
-
                             if(!foundUser){
-
+                                console.log('email incorrect')
                                 disconnect()
-                                reject('email or password incorrect')
+                                reject('email or password incorrect, retry')
 
                             }else{
 
                                 //  compare passwords
 
-                                console.log('found');
-
-                               
                                 let foundPassword=foundUser.password;
-
-                                console.log(password,foundPassword)
 
                                 bcrypt.compare(password,foundPassword ).then(
                                     (same) => {
                                         if (same){
-                                            console.log(same)
                                             disconnect();
                                             resolve(foundUser._id)
                                         }else{
+
+                                            // console.log('password incorrect')
                                             disconnect();
-                                            reject('email or password incorrect')
+                                            reject('email or password incorrect, retry')
+                                            
                                         }
                                     }
                                 )
                             }
                         }    
                     )
-                    
                     .catch(
                         (err) => {
                             
-                            // console.error('internal system error '+err);
-                            reject('dbUnRequestable');
+                            console.error('internal system error '+err);
+                            reject('db unrequestable');
                         }
                     )
                 }
@@ -161,7 +153,7 @@ const checkEmailPassword=(email, password)=>{
         .catch(
             (error) => {
 
-            console.log('cant connect to db '+error);
+            console.log("can't connect to db "+error);
             reject(error);
            
         }) }

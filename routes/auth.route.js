@@ -1,6 +1,6 @@
 import express from "express";
 
-import { getSigninPage, postSignin, getLoginPage, postLogin, logout   } from '../controllers/auth.controller.js'
+import  { postSignin,postLogin,logout, getLoginPage, getSigninPage} from '../controllers/auth.controller.js'
 
 const router=express.Router();
 

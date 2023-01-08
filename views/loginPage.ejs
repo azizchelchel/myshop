@@ -6,33 +6,12 @@
 <form action="/auth/login" method="POST">
     <div class="container">
       <h1>welcome, you can login from here</h1>
-      
-      <% if(typeof message!=='undefined'){ %> 
-        <%- message %>
-        <h2><br></h2>
-        <% } %>
-
-        <!-- <% if(typeof welcomeLogin!=='undefined'){ %>
-          <%- welcomeLogin %>
-          <h2><br></h2>
-        <% }%> 
-
-      <% if(typeof passMailIncorrect!=='undefined'){ %> 
-      <%- passMailIncorrect %> 
-          <h2><br></h2>
-        <%  } %>  
         
       <% if(typeof fieldUmpty!=='undefined'){ %> 
-      <%- fieldUmpty %>
-      <h2><br></h2>
-      <% } %> 
-        
-      <% if(typeof dbInfo!=='undefined'){ %> 
-      <%- dbInfo %> 
-      <h2><br></h2>
-      <% } %> 
-                              -->
-              
+      <h6 style="color: red;"><%- fieldUmpty %></h6>
+      <% } else{%>  
+      <div><br></div>
+      <% } %>
       
     </div>
     <div class="mb-3">
@@ -46,6 +25,10 @@
     </div>
     <button type="submit" class="btn btn-primary">Submit</button>
 </form>
+<% if(typeof autherror!=='undefined'){ %> 
+  <h6 style="color: red;"><%- autherror %></h6>
+  <% } %>  
+ 
 </div>
 <%- include('parts/footer') %> 
 

@@ -3,10 +3,9 @@ import { connect } from "mongoose";
 import {checkAndInsertUser,checkEmailPassword} from "../models/auth.model.js"
 
 
+// send signin credentials
 
-
-
-function postSignin (req,res,next){
+const postSignin =(req,res,next)=>{
 
   // get the info sent by user
 
@@ -20,30 +19,19 @@ function postSignin (req,res,next){
 
     .then(
       (user) => {
-
-        let username=user.username;
-
-       res.render('loginPage',
-       {message:`you have registered successfully ${username}`})
+        res.render('loginPage',
+        {message:`you have registered successfully ${user.username}`
+        })
       }
 
     )
     .catch(
 
       (err) => { 
-        if (err instanceof ReferenceError)
-        {
-          // ReferenceError
-          res.render('signinPage',
-          {message:'problem in registration  try agian.'})
-        
-       }else {
-        if (err instanceof SyntaxError){
-
-        console.log(err)
-
-       }
-       }
+      
+        req.flash("signinError", err)
+        res.render('signinPage',
+        {signinError:req.flash('signinError')[0]})
       }
     )
 
@@ -52,7 +40,7 @@ function postSignin (req,res,next){
     res.render('signinPage',
     {
 
-      fillBlanks:'you must fill all blanks'
+      signinError:'you must fill all the fields'
 
     });
   }
@@ -60,108 +48,77 @@ function postSignin (req,res,next){
     
 }
 
+// post login credentials
 
 const postLogin=(req,res,next)=>{
 
-  // fields not empty
-  // get req.body
-  // checkin db for email ---> compare passwords
-  return new Promise((resolve,reject) => {
+// fields not empty
+// get req.body
+// checkin db for email ---> compare passwords
 
-    const email=req.body.email;
-    const password=req.body.password;
+const email=req.body.email;
+const password=req.body.password;
 
-    console.log(`${email} et ${password}`)
-
-
-     if(email&&password){
+if(email&&password){
       
-      checkEmailPassword(email,password)
-      .then(
-        (id) => { 
-
-          console.log('you loged in ' +id)
-
-          console.log(req.session)
+  checkEmailPassword(email,password)
+  .then(
+    (id) => {
+      // add userId=id property to the session
 
           req.session.userId=id;
 
-          console.log(req.session);
+          // redirect to home('/')
 
           res.redirect('/');
           
         }
-
       )
       .catch((err) => { 
+        req.flash("autherror",err);
 
-        if(err==='invalidPass'||'unSignedup'){
-            res.render('loginPage',
-            {
-              passMailIncorrect:'email or password is incorrect, retry'
-            })
-
-        }else{
-
-            res.render('loginPage',
-            {
-              dbInfo:'database unreachable fetch your network connection'
-            })
-        }
-       })
-
-     }
-     else{
-
-      
-      res.render('loginPage', 
-      {
-        fieldUmpty:'you must fillin all the fields, retry.'
+        res.render('loginPage',
+        {autherror:req.flash('autherror')[0]})
       })
-     }
-  })
-
-
 
 }
+else{      
+  res.render('loginPage', 
+  {
+    autherror:'you must fillin all the fields, retry.'
+  })
+  }
+}
+
+
+// get login page
 
 const getLoginPage = (req,res,next) => {
-    
 
   res.render('loginPage',
-  {message:'welcome'})
+  {
+    autherror:req.flash('autherror')[0]
+  })
 }
 
+// get signin page
 
 const getSigninPage = (req,res,next) => {
 
   //display signin page
 
-  res.render('signinPage',{message: "please fill all blanks" });
-
-    
+  res.render('signinPage',{signinPage: req.flash("autherror")[0] });
 }
 
-
- 
-  
-
-
-
-
+// logout
 
 const logout = (req,res,next) => {
-    
 
   req.session.destroy(() => {
-    console.log('destroyed')
     res.redirect('/')
   })
 }
 
 
 
-    
-
-
-export { logout, getLoginPage , postSignin, getSigninPage, postLogin };
+export {postSignin, logout, postLogin, getLoginPage, getSigninPage};

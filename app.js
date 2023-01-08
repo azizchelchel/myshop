@@ -17,6 +17,8 @@ import session from 'express-session';
 
 import SessionStore from 'connect-mongodb-session';
 
+import flash from 'connect-flash'
+
 const myMongoDbStore=SessionStore(session);
 
 const app=express();
@@ -24,6 +26,8 @@ const app=express();
 const PORT=process.env.PORT||3000;
 
 const __dirname = path.resolve();
+
+app.use(flash())
 
 app.use(staticMiddleware(join(__dirname,'assets')));
 
