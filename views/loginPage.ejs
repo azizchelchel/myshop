@@ -7,12 +7,11 @@
     <div class="container">
       <h1>welcome, you can login from here</h1>
         
-      <% if(typeof fieldUmpty!=='undefined'){ %> 
-      <h6 style="color: red;"><%- fieldUmpty %></h6>
-      <% } else{%>  
-      <div><br></div>
-      <% } %>
-      
+    <% if(typeof loginErrors!=='undefined'){ %>
+      <% if (loginErrors.length!==0) {%> 
+      <p style="color: red;"><%- loginErrors[0].msg %> </p>
+      <% } %> 
+      <% } %>  
     </div>
     <div class="mb-3">
       <label for="exampleInputEmail1" class="form-label">Email address</label>

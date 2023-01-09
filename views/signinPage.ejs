@@ -11,22 +11,43 @@
         <p style="color:red"><%- signinError %></p>
      
       </h2>
-      <% } %>      
-      
-      
+      <% } %>    
+
       <div class="mb-3">
           <label for="exampleInputUserName" class="form-label">Username</label>
           <input type="text" name="username" class="form-control" id="exampleInputUserName" aria-describedby="emailHelp">
       </div>
+      <% for(let e of validationErrors){  %> 
+        <% if (e.param==="username"){ %> 
+        <p style="color: red;"><%- e.msg %></p> 
+        <% }} %> 
       <div class="mb-3">
           <label for="exampleInputEmail1" class="form-label">Email address</label>
           <input type="email" name="email" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp">
-          <div id="emailHelp" class="form-text">We'll never share your email with anyone else.</div>
       </div>
+      <% for(let e of validationErrors){  %> 
+        <% if (e.param==="email"){ %> 
+          <p style="color: red;"><%- e.msg %></p> 
+        <% }} %> 
+     
       <div class="mb-3">
           <label for="exampleInputPassword1" class="form-label">Password</label>
           <input type="password" class="form-control" name="password" id="exampleInputPassword1">
       </div>
+      <% for(let e of validationErrors){  %> 
+        <% if (e.param==="password"){ %> 
+          <p style="color: red;"><%- e.msg %></p>  
+        <% }} %> 
+     
+      <div class="mb-3">
+        <label for="exampleInputPassword1" class="form-label">Confirm Password</label>
+        <input type="password" class="form-control" name="confirmPassword" id="exampleInputPassword1">
+    </div>
+    <% for(let e of validationErrors){  %> 
+      <% if (e.param==="confirmPassword"){ %> 
+        <p style="color: red;"><%- e.msg %></p> 
+      <% }} %> 
+      
       <div class="mb-3">
         <button type="submit"  class="btn btn-primary">submit</button>
       </div>

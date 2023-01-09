@@ -1,124 +1,108 @@
-import { render } from "ejs";
-import { connect } from "mongoose";
-import {checkAndInsertUser,checkEmailPassword} from "../models/auth.model.js"
-
+import render from "ejs";
+import connect from "mongoose";
+import {
+  checkAndInsertUser,
+  checkEmailPassword,
+} from "../models/auth.model.js";
+import { validationResult } from "express-validator";
 
 // send signin credentials
 
-const postSignin =(req,res,next)=>{
-
+const postSignin = (req, res, next) => {
+  // return console.log(validationResult(req));
   // get the info sent by user
+  if (validationResult(req).isEmpty()) {
+    const username = req.body.username;
+    const email = req.body.email;
+    const password = req.body.password;
 
-  const user=req.body;
+    // data validation
 
-  if(user.username && user.email && user.password){
+    checkAndInsertUser(username, email, password)
+      .then((user) => {
+        res.render("loginPage", {
+          message: `you have registered successfully ${user.username}`,
+        });
+      })
+      .catch((err) => {
+        req.flash("signinError", err);
+        res.render("signinPage", { signinError: req.flash("signinError")[0] });
+      });
+  } else {
 
-    // check in db if email already exists
-
-    checkAndInsertUser(user)
-
-    .then(
-      (user) => {
-        res.render('loginPage',
-        {message:`you have registered successfully ${user.username}`
-        })
-      }
-
-    )
-    .catch(
-
-      (err) => { 
-      
-        req.flash("signinError", err)
-        res.render('signinPage',
-        {signinError:req.flash('signinError')[0]})
-      }
-    )
-
-  } else{
-
-    res.render('signinPage',
-    {
-
-      signinError:'you must fill all the fields'
-
-    });
+    console.log('not empty')
+    req.flash("validationErrors", validationResult(req).array());
+    console.log(validationResult(req).array()[0].param)
+    res.redirect("/auth/signinPage");
   }
-
-    
-}
+};
 
 // post login credentials
 
-const postLogin=(req,res,next)=>{
+const postLogin = (req, res, next) => {
+  const email = req.body.email;
+  const password = req.body.password;
+  
 
-// fields not empty
-// get req.body
-// checkin db for email ---> compare passwords
+ if (validationResult(req).isEmpty()){
 
-const email=req.body.email;
-const password=req.body.password;
+    
+    checkEmailPassword(email, password)
+      .then((id) => {
+        // add userId=id property to the session
 
-if(email&&password){
-      
-  checkEmailPassword(email,password)
-  .then(
-    (id) => {
-      // add userId=id property to the session
+        req.session.userId = id;
 
-          req.session.userId=id;
+        // redirect to home('/')
 
-          // redirect to home('/')
-
-          res.redirect('/');
-          
-        }
-      )
-      .catch((err) => { 
-        req.flash("autherror",err);
-
-        res.render('loginPage',
-        {autherror:req.flash('autherror')[0]})
+        res.redirect("/");
       })
+      .catch((err) => {
+        req.flash("autherror", err);
 
-}
-else{      
-  res.render('loginPage', 
-  {
-    autherror:'you must fillin all the fields, retry.'
-  })
-  }
-}
+        res.render("loginPage", {
+          autherror: req.flash("autherror")[0],
+        });
+      });
 
+    }else{
+
+      console.log('not empty')
+      req.flash("loginErrors", validationResult(req).array());
+      
+      res.redirect('/auth/getLoginPage')
+    }
+  
+};
 
 // get login page
 
-const getLoginPage = (req,res,next) => {
+const getLoginPage = (req, res, next) => {
 
-  res.render('loginPage',
-  {
-    autherror:req.flash('autherror')[0]
-  })
-}
+  // console.log(req.flash('loginErrors'))
+  res.render("loginPage", {
+    autherror: req.flash("autherror")[0],
+    loginErrors:req.flash('loginErrors')
+  });
+};
 
 // get signin page
 
-const getSigninPage = (req,res,next) => {
-
+const getSigninPage = (req, res, next) => {
   //display signin page
 
-  res.render('signinPage',{signinPage: req.flash("autherror")[0] });
-}
+  res.render("signinPage", {
+    signinPage: req.flash("autherror")[0],
+    validationErrors: req.flash("validationErrors"),
+  });
+};
 
 // logout
 
-const logout = (req,res,next) => {
-
+const logout = (req, res, next) => {
   req.session.destroy(() => {
-    res.redirect('/')
-  })
-}
+    res.redirect("/");
+  });
+};
 
-
-
-export {postSignin, logout, postLogin, getLoginPage, getSigninPage};
+export { postSignin, logout, postLogin, getLoginPage, getSigninPage };
