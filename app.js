@@ -11,6 +11,8 @@ import productRouter from './routes/product.route.js';
 
 import authRouter from  './routes/auth.route.js'
 
+import cartRouter from  './routes/cart.route.js'
+
 import bcrypt from 'bcrypt';
 
 import session from 'express-session';
@@ -67,6 +69,8 @@ app.use('/auth', authRouter);
 
 
 app.use('/', homeRouter);
+
+app.use('/cart', cartRouter);
 
 
 app.listen(PORT, () => { 

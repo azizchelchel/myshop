@@ -22,11 +22,14 @@ const postSignin = (req, res, next) => {
       .then((user) => {
         res.render("loginPage", {
           message: `you have registered successfully ${user.username}`,
+          isUser:req.session.userId
         });
       })
       .catch((err) => {
         req.flash("signinError", err);
-        res.render("signinPage", { signinError: req.flash("signinError")[0] });
+        res.render("signinPage",
+         { signinError: req.flash("signinError")[0],
+        isUser:req.session.userId });
       });
   } else {
 
@@ -59,9 +62,9 @@ const postLogin = (req, res, next) => {
       })
       .catch((err) => {
         req.flash("autherror", err);
-
         res.render("loginPage", {
           autherror: req.flash("autherror")[0],
+          isUser:req.session.userId
         });
       });
 
@@ -79,10 +82,11 @@ const postLogin = (req, res, next) => {
 
 const getLoginPage = (req, res, next) => {
 
-  // console.log(req.flash('loginErrors'))
   res.render("loginPage", {
     autherror: req.flash("autherror")[0],
-    loginErrors:req.flash('loginErrors')
+    loginErrors:req.flash('loginErrors'),
+    isUser:req.session.userId
+   
   });
 };
 
@@ -94,6 +98,9 @@ const getSigninPage = (req, res, next) => {
   res.render("signinPage", {
     signinPage: req.flash("autherror")[0],
     validationErrors: req.flash("validationErrors"),
+    isUser:req.session.userId
+   
+
   });
 };
 

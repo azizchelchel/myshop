@@ -1,10 +1,11 @@
 import  getHome  from '../controllers/home.controller.js';
 import express from "express"
 
+
 const router=express.Router();
 
 
 
-router.get('/', getHome )
+router.get('/',getHome )
 
 export default router; 

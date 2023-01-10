@@ -10,20 +10,21 @@ import {
   getSigninPage,
 } from "../controllers/auth.controller.js";
 
+import {isAuth,isNotAuth} from './protectors/auth.protector.js'
+
 const router = express.Router();
 
 // display signin page
 
-router.get(
-  "/signinPage",
-  bodyParser.urlencoded({ extended: true }),
-  getSigninPage
+router.get("/signinPage",isNotAuth,
+bodyParser.urlencoded({ extended: true }),
+getSigninPage
 );
 
 // signin route
 
 router.post(
-  "/postSignin",
+  "/postSignin",isNotAuth,
   bodyParser.urlencoded({ extended: true }),
   check("username").not().isEmpty().withMessage('username must be at least one character'),
   check("email").isEmail().withMessage('write a valid email'),
@@ -35,13 +36,13 @@ router.post(
   postSignin
 );
 
-// loginPage route
+// get login Page route
 
-router.get("/getLoginPage", getLoginPage);
+router.get("/getLoginPage",isNotAuth ,getLoginPage);
 
 // login route
 
-router.post("/login", bodyParser.urlencoded({ extended: true }),
+router.post("/login", isNotAuth, bodyParser.urlencoded({ extended: true }),
 check("email").isEmail().withMessage('email or password is incorrect'),
 check("password").isLength({ min: 8,max:40 }).withMessage('email or password is incorrect'),
 postLogin);
@@ -50,6 +51,8 @@ postLogin);
 
 
 
-router.all("/logout", logout);
+router.all("/logout",isAuth,logout);
+
+
 
 export default router;

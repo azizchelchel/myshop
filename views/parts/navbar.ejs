@@ -9,18 +9,21 @@
           <li class="nav-item">
             <a class="nav-link active" aria-current="page" href="/">Home</a>
           </li>
+          <% if ( isUser) {%> 
           <li class="nav-item">
             <a class="nav-link" href="/cart">Cart</a>
           </li>
           <li class="nav-item">
             <a class="nav-link" href="/orders">Orders</a>
           </li>
+          <% }else{ %> 
           <li class="nav-item">
             <a class="nav-link" href="/auth/signinPage" >Signin</a>
           </li>
           <li class="nav-item">
             <a class="nav-link" href="/auth/getLoginPage">Login</a>
           </li>
+          <% } %> 
           
           <li class="nav-item">
             <a class="nav-link" href="/admin/add">Add</a>
@@ -30,9 +33,11 @@
           </li>
           
         </ul>
+        <% if ( isUser) {%> 
         <form action="/auth/logout"  method="POST">
           <button type="submit" class="btn btn-danger">Logout</button>
         </form>
+        <% } %> 
         
       </div>
       

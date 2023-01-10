@@ -9,10 +9,13 @@ const getHome=(req,res,next)=>{
     getProducts(category).then(
         
         products=>{
+            console.log(req.session.userId),
         
         res.render('index',
             {
-                products:products
+                
+                products:products,
+                isUser:req.session.userId
             }
         )
         })
