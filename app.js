@@ -13,21 +13,15 @@ import authRouter from  './routes/auth.route.js'
 
 import cartRouter from  './routes/cart.route.js'
 
-import bcrypt from 'bcrypt';
-
-import session from 'express-session';
-
-import SessionStore from 'connect-mongodb-session';
-
-import flash from 'connect-flash'
-
-const myMongoDbStore=SessionStore(session);
+import flash from 'connect-flash';
 
 const app=express();
 
 const PORT=process.env.PORT||3000;
 
 const __dirname = path.resolve();
+
+app.use(express.json())
 
 app.use(flash())
 
@@ -41,21 +35,6 @@ app.set('views','views');
 
 const { urlencoded } = pkg;
 
-const STORE=new myMongoDbStore({
-    uri: process.env.db_url,
-    collection:'sessions'
-})
-
-app.use(session({
-    secret:process.env.myDbSecret,
-    saveUninitialized:false,
-    resave:false,
-    cookie:{                              // if we want to let it 
-        maxage:60*1000  //one hour     // default ie at the closing of brouser
-    },                                    // we dont mention cookie field
-    store:STORE  //if not mentionned default is in the memory if the server(RAM)
-
-}))
 
 app.use(urlencoded({extended:true}))
 
@@ -64,8 +43,6 @@ app.use('/product', productRouter);
 
 
 app.use('/auth', authRouter);
-
-
 
 
 app.use('/', homeRouter);

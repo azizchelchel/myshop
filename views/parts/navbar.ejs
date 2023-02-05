@@ -9,7 +9,7 @@
           <li class="nav-item">
             <a class="nav-link active" aria-current="page" href="/">Home</a>
           </li>
-          <% if ( isUser) {%> 
+          <% if ( typeof isUser!=='undefined') {%> 
           <li class="nav-item">
             <a class="nav-link" href="/cart">Cart</a>
           </li>
@@ -33,7 +33,7 @@
           </li>
           
         </ul>
-        <% if ( isUser) {%> 
+        <% if ( typeof isUser!=='undefined') {%> 
         <form action="/auth/logout"  method="POST">
           <button type="submit" class="btn btn-danger">Logout</button>
         </form>

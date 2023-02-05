@@ -1,115 +1,233 @@
-import render from "ejs";
-import connect from "mongoose";
 import {
   checkAndInsertUser,
-  checkEmailPassword,
+  checkEmailPassword
 } from "../models/auth.model.js";
-import { validationResult } from "express-validator";
+import {signupSchema, signinSchema} from '../routes/dataValidation/validator.js'
+import nodemailer from'nodemailer';
+import {v4 as uuidv4} from 'uuid';
+import bcrypt from 'bcryptjs'
+import Prisma from '@prisma/client';
+const prisma = new Prisma.PrismaClient();
+import jwt from 'jsonwebtoken';
 
-// send signin credentials
 
-const postSignin = (req, res, next) => {
-  // return console.log(validationResult(req));
-  // get the info sent by user
-  if (validationResult(req).isEmpty()) {
-    const username = req.body.username;
-    const email = req.body.email;
-    const password = req.body.password;
 
-    // data validation
+// create nodemailer transporter
 
-    checkAndInsertUser(username, email, password)
-      .then((user) => {
-        res.render("loginPage", {
-          message: `you have registered successfully ${user.username}`,
-          isUser:req.session.userId
-        });
-      })
-      .catch((err) => {
-        req.flash("signinError", err);
-        res.render("signinPage",
-         { signinError: req.flash("signinError")[0],
-        isUser:req.session.userId });
-      });
+let transporter = nodemailer.createTransport({
+  service:"Gmail",
+  auth:{
+    user:process.env.AUTH_EMAIL,
+    pass:process.env.AUTH_PASS
+  }
+})
+
+// verify sending emails
+
+transporter.verify((error, success) => {
+  if(error){
+    console.log('error'+error)
+  }else{
+    console.log('ready for messaging')
+  }
+})
+
+// send sign up credentials
+
+const postSignup = (req, res, next) => {
+  // data validation
+  const {error, value} = signupSchema.validate(req.body, {abortEarly:false});
+  if (!error) {
+    const user = req.body
+    checkAndInsertUser(user, res)
+    .then(
+      (user) => {
+        res.status(200).send(
+          {
+            "status":"success",
+            "message":"signed up successfully",
+            "data":user
+          }
+        )
+    }
+    )
+    .catch(
+      (error) => {
+        res.status(400).send({
+          "message":"an error occured",
+          "error":error
+        })
+      }
+    );
   } else {
-
-    console.log('not empty')
-    req.flash("validationErrors", validationResult(req).array());
-    console.log(validationResult(req).array()[0].param)
-    res.redirect("/auth/signinPage");
+    let messages = [];
+    error.details.map(
+      (e) => {
+        messages.push(e.message);
+      }
+    )
+    res.status(400).send({
+      "message":"user errors, check the data you have inserted",
+      "errors":messages
+      
+    });
   }
 };
 
 // post login credentials
 
-const postLogin = (req, res, next) => {
-  const email = req.body.email;
-  const password = req.body.password;
-  
-
- if (validationResult(req).isEmpty()){
-
-    
+const postSignin = (req, res, next) => {
+  const {email, password} = req.body;
+  const {error, value} = signinSchema.validate(req.body, {abortEarly:false});
+  if (!error){
     checkEmailPassword(email, password)
-      .then((id) => {
-        // add userId=id property to the session
-
-        req.session.userId = id;
-
-        // redirect to home('/')
-
-        res.redirect("/");
-      })
-      .catch((err) => {
-        req.flash("autherror", err);
-        res.render("loginPage", {
-          autherror: req.flash("autherror")[0],
-          isUser:req.session.userId
+    .then(
+      (id) => {
+        res.status(200).json(
+          {
+            "status":"success",
+            "message":"sign in success",
+            userId:id,
+            token:jwt.sign(
+              { userId:id},
+              process.env.jwtSecret,
+              {expiresIn:"24h"}
+            )
+          }
+        )
+      }  
+     
+    )
+    .catch(
+      (error) => {
+        console.log(error)
+        res.status(500).json({
+          "message":"error",
+          "error":error
         });
+      }
+    );
+  }else{
+      let messages = [];
+      error.details.map(
+        (e) => {
+          messages.push(e.message);
+        }
+      );
+      res.status(400).send({
+        "message ":"user errors, check the data you have inserted",
+        "errors ":messages
       });
+  }
+};
 
-    }else{
 
-      console.log('not empty')
-      req.flash("loginErrors", validationResult(req).array());
-      
-      res.redirect('/auth/getLoginPage')
+// send verification email
+
+const sendVerificationEmail=(userInDb, res)=>{
+  // user info
+  const {id,email} = userInDb;
+
+  // url to be used in email
+  const currentUrl = "http://localhost:4000/";
+
+  // creating unique string
+  const uniqueString = uuidv4() + id;
+
+  // mail options
+  const mailOptions = {
+    from : process.env.AUTH_EMAIL,
+    to : email,
+    subject : "verify your email",
+    html : `<p>verify your email address to complete the signup and login into your account.</p><p>this link <b>expires in 6 hours</b>.</p><p> Press <a href=${currentUrl + "auth/verify/" + id + "/"+ uniqueString}> here</a> to proceed.</p>`,
+
+  };
+
+  // hash the unique string
+  const saltrounds = 10;
+  bcrypt.hash(uniqueString, saltrounds)
+  .then( 
+    async (hashedUniqueString) => {//hashing process successful
+
+      console.log(hashedUniqueString);
+      console.log(uniqueString);  
+      prisma.Userverifications.create({
+        data:{
+          userId:id.toString(),
+          uniqueString:hashedUniqueString,
+          createdAt:new Date(),
+          expiresAt:new Date(new Date().getTime()+(24*60*60*1000))
+        }
+      })
+      .then(
+      () => {
+        // send an email to user's email address for verification
+        transporter.sendMail(mailOptions)
+        .then(
+          async (mailSent) => {
+            console.log(mailSent)
+            if(mailSent){
+              res.status(200).json(
+                {
+                  "status":"pending",
+                  "message":"verification email is sent",
+                  "id":id,
+                  "uniqueString":uniqueString,
+                  "response": {
+                    accepted:mailSent.accepted,
+                    enveloppe:mailSent.envelope,
+                  }                
+                }
+              )
+            }else{
+              res.status(500).json(
+                {
+                  "status":"failed",
+                  "message":"system error, sending verification email has failed",
+                }
+              )
+            }
+          }
+        )
+        .catch(
+          (error) => {
+            console.log(error)
+            res.status(400).json({
+              "status":"failed",
+              "message":"failed to send mail"
+            })
+          }
+        )
+      }
+    )
+    .catch(
+      (error) => {
+        console.log(error);
+        res.status(500).json({
+          "status":"failed",
+          "message":"error on writing in db"
+        })
+      }
+    )
     }
-  
+  )
+  .catch(
+    (error) => {
+      console.log(error)
+      res.status(500).json({
+        "status":"failed",
+        "message":"system error hash failure"
+      })
+    }
+  )
+
 };
 
-// get login page
 
-const getLoginPage = (req, res, next) => {
-
-  res.render("loginPage", {
-    autherror: req.flash("autherror")[0],
-    loginErrors:req.flash('loginErrors'),
-    isUser:req.session.userId
-   
-  });
-};
-
-// get signin page
-
-const getSigninPage = (req, res, next) => {
-  //display signin page
-
-  res.render("signinPage", {
-    signinPage: req.flash("autherror")[0],
-    validationErrors: req.flash("validationErrors"),
-    isUser:req.session.userId
-   
-
-  });
-};
-
-// logout
-
-const logout = (req, res, next) => {
+const signout = (req, res, next) => {
   req.session.destroy(() => {
     res.redirect("/");
   });
 };
 
-export { postSignin, logout, postLogin, getLoginPage, getSigninPage };
+export { postSignup, signout, postSignin, sendVerificationEmail };

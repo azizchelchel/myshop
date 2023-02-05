@@ -1,9 +1,5 @@
-import { set, Schema, model, connect, disconnect } from 'mongoose';
-
+import mongoose, { model, Schema } from 'mongoose';
 import 'dotenv/config' ;
-
-set('strictQuery', true);
-
 const productSchema=Schema({
 
     name:String,

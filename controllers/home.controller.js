@@ -3,27 +3,23 @@ import {getProducts} from '../models/products.model.js';
 const getHome=(req,res,next)=>{
 
     // get catgory
-
     const category=req.query.category;
-
-    getProducts(category).then(
-        
+    getProducts(category)
+    .then(
         products=>{
-            console.log(req.session.userId),
-        
-        res.render('index',
-            {
-                
-                products:products,
-                isUser:req.session.userId
+            res.status(200).json({
+                message:"successful",
+                data:products,           
             }
         )
-        })
-        
-        .catch((err) => {
-        
-            console.log('error', err)
-
+        }
+    ) 
+    .catch( error => {
+            console.log('error', error)
+            res.status(500).json({
+                message:"error occured",
+                error:error
+            })
         }
     )
 

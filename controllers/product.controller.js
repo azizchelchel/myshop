@@ -46,7 +46,8 @@ const getFirstProduct =(req,res,next)=>{
         res.render('productDetails',
         {
             
-            product:product
+            product:product,
+            userId:req.session.userId
         }
         )
     })

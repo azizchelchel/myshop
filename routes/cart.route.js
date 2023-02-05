@@ -1,12 +1,12 @@
 import  {getCart}  from '../controllers/cart.controller.js';
 import express from "express"
-import {isAuth} from './protectors/auth.protector.js'
+import {jwtProtector} from './protectors/authProtector.js'
 
 
 const router=express.Router();
 
 
 
-router.get('/',isAuth,getCart )
+router.get('/',jwtProtector,getCart )
 
 export default router; 

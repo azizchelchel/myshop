@@ -1,9 +1,4 @@
-import { set, Schema, model, connect, disconnect } from 'mongoose';
-
 import 'dotenv/config' ;
-
-set('strictQuery', true);   
-
 import {productModel} from './products.model.js'
 
 // find product by id in db
