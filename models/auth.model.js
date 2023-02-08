@@ -1,9 +1,6 @@
-// import mongoose, {Schema, connect, disconnect } from "mongoose";
-import {sendVerificationEmail}  from '../controllers/auth.controller.js'
-import "dotenv/config";
-import bcrypt from 'bcryptjs';
-// import { ObjectId} from "bson";
 import Prisma from '@prisma/client';
+import {sendVerificationEmail}  from '../controllers/auth.controller.js';
+import bcrypt from 'bcryptjs';
 const prisma = new Prisma.PrismaClient();
 
 

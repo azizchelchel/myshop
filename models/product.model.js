@@ -1,77 +1,129 @@
-import 'dotenv/config' ;
-import {productModel} from './products.model.js'
+import Prisma from '@prisma/client';
+const prisma = new Prisma.PrismaClient();
+
+
+
+// create new product in DB
+const createProductInDb=(data)=>{
+    return new Promise(
+        async (resolve,reject) => {
+            // connect to db        
+            await prisma.products.create(
+                    {
+                        data:{
+                            name: data.name,
+                            image: data.image,
+                            price: data.price,
+                            description: data.description,
+                            category:data.category
+                        }
+                    }
+                )
+                .then(
+                    async product=>{
+                        console.log(product)
+                        await prisma.$disconnect();
+                        resolve(product);
+                    }
+                )
+                .catch(
+                    async (error) => {
+                        console.log(error);
+                        await prisma.$disconnect();
+                        reject(error );
+                    }
+                )  
+        }
+    )
+}
 
 // find product by id in db
-
-const findProductById=(id)=>{
-
-    return new Promise((resolve,reject) => {
-
-        // connect to db
-      
-        connect(process.env.db_url.toString())
-
-        .then(() => {
-        
-        return productModel.findById({_id:id})
-       
-        })
-
-        .then(product=>{
-
-
-            disconnect();
-
-            resolve(product);
-
-        })
-
-        .catch(
-            (err) => reject(err )
+const findProductInDb=(id)=>{
+    return new Promise(
+        async(resolve,reject) => {
+            await prisma.products.findUnique(
+                {
+                    where: {
+                        product_id: parseInt(id),
+                    }
+                }
+            )
+            .then(
+                async (product) => {
+                    await prisma.$disconnect();
+                    resolve(product);
+                }
+            )
+            .catch(
+                async (error) => {
+                    console.log(error);
+                    await prisma.$disconnect();
+                    reject(error);
+                }
             )  
-        
-    })
-
-   
-
+        }
+    )
 }
-
-
 
 // find the first product in db
+const getAllProductsFromDb=()=>{
+    return new Promise(
+        async (resolve,reject) => {
+            // connect to db        
+            await prisma.products.findMany(
+                    {
+                        where:{isDeleted:false}
+                    }
+                )
+            .then(
+                products=>{
+                    prisma.$disconnect();
+                    resolve(products);
+                }
+            )
+            .catch(
+                async (error) => {
+                    console.log(error);
+                    await prisma.$disconnect();
+                    reject(error );
+                }
+            )  
+        }
+    )
+}
 
-const findFirstProduct=(_id)=>{
-
-    return new Promise((resolve,reject) => {
-
-        // connect to db
-      
-        connect(process.env.db_url.toString())
-
-        .then(
-            
-            () => {
-        
-                return productModel.findOne({});
-       
-            }
-        )
-        .then(product=>{
-
-
-            disconnect();
-
-            resolve(product);
-
-        })
-
-        .catch((err) => reject(err ))  
-        
-    })
-
-   
-
+// delete product
+const deleteFromDb=(id)=>{
+    return new Promise(
+        async (resolve,reject) => {
+            // connect to db        
+            await prisma.products.update(
+                    {
+                        where:{
+                            product_id:parseInt(id)
+                        },
+                        data:{
+                            isDeleted: true
+                        }
+                    
+                    }
+                )
+                .then(
+                    product=>{
+                        prisma.$disconnect();
+                        resolve(product);
+                    }
+                )
+                .catch(
+                    async (error) => {
+                        console.log(error);
+                        await prisma.$disconnect();
+                        reject(error );
+                    }
+                )  
+        }
+    )
 }
 
 
-export  {findProductById,findFirstProduct};
+export  {findProductInDb,getAllProductsFromDb, deleteFromDb, createProductInDb};

@@ -9,28 +9,10 @@ import bcrypt from 'bcryptjs'
 import Prisma from '@prisma/client';
 const prisma = new Prisma.PrismaClient();
 import jwt from 'jsonwebtoken';
+import {transporter} from '../mailing/mails.js'
 
 
 
-// create nodemailer transporter
-
-let transporter = nodemailer.createTransport({
-  service:"Gmail",
-  auth:{
-    user:process.env.AUTH_EMAIL,
-    pass:process.env.AUTH_PASS
-  }
-})
-
-// verify sending emails
-
-transporter.verify((error, success) => {
-  if(error){
-    console.log('error'+error)
-  }else{
-    console.log('ready for messaging')
-  }
-})
 
 // send sign up credentials
 

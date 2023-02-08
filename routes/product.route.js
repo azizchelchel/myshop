@@ -1,10 +1,16 @@
 import express from "express";
-import {getProductById,getFirstProduct} from "../controllers/product.controller.js";
+import {jwtProtector} from './protectors/authProtector.js'
+import {getProductById, getAllProducts, deleteProduct, createProduct} from "../controllers/product.controller.js";
+
 const router=express.Router();
 
-// get first product in db for "/product/"
-router.get('/',getFirstProduct )
-// get product by id
-router.get('/:id',      getProductById )
+router.post('/createProduct',jwtProtector, createProduct); //create new product
+
+router.get('/getProducts/:id', getProductById); //get product by id
+
+router.get('/getProducts', getAllProducts); //get product by id
+
+router.put('/deleteProduct/:id', deleteProduct); //delete product 
+
 
 export default router;

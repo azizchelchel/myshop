@@ -13,7 +13,9 @@ datasource db {
 
 
 model Users {
-   id           Int    @id @default(autoincrement())
+  id            Int    @id @default(autoincrement())
+
+  personType          personTypes   @default(store_owner)
 
   fname         String 
 
@@ -49,10 +51,18 @@ model Userverifications {
 }
 
 model Products {
-    product_id  Int @unique @default(autoincrement())
+    product_id  Int    @unique @default(autoincrement())
     name        String
     image       String
     price       Int
     description String
     category    String
+    isDeleted   Boolean @default(false)
+}
+
+enum personTypes {
+  store_owner
+  supplier
+  employee
+  client
 }

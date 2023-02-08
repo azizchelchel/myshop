@@ -1,6 +1,7 @@
 import jwt from 'jsonwebtoken';
 const jwtProtector=(req,res,next) => { 
     try {
+        console.log("aw rani hnaa")
         // get the token from req headers
         const token=req.headers.authorization.split(' ')[1];
         // decode the token
