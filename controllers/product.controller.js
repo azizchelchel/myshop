@@ -1,21 +1,25 @@
 
-// import  {findProductById,findFirstProduct, createProductInDb, deleteFromDb} from '../models/product.model.js';
-import  {createProductInDb, getAllProductsFromDb, findProductInDb, deleteFromDb } from '../models/product.model.js';
+import {
+    createProductInDb,
+    getAllProductsFromDb,
+    findProductInDb,
+    deleteFromDb
+} from '../models/product.model.js';
 
 // create new product
-const createProduct=(req,res,next)=>{
-    // get the data
-    const data=req.body;
-    // get product from db 
-    createProductInDb(data)
+const createProduct = async (req,res,next) => {
+    // get the data from request
+    const data = req.body;
+    // create product 
+    await createProductInDb(data)
     .then(
-        product=>{
+        product => {
             res.status(200).json(
                 {
-                    message:'succes',
-                    data:product
+                    message: 'succes',
+                    data: product
                 }
-            )
+            );
         }
     )
     .catch(
@@ -23,30 +27,28 @@ const createProduct=(req,res,next)=>{
             console.log('error', error);
             res.status(500).json(
                 {
-                    message:'failed',
-                    error:error
+                    message: 'failed',
+                    error: error
                 }
-            )
+            );
         }
     )
-}
-
+};
 
 // get product by id
-const getProductById=(req,res,next)=>{
+const getProductById = async (req,res,next) => {
     // get the product id from params
-    const productId=req.params.id;
-    console.log(productId);
+    const productId = req.params.id;
     // get product from db 
-    findProductInDb(productId)
+    await findProductInDb(productId)
     .then(
-        product=>{
+        product => {
             res.status(200).json(
                 {
-                    message:'succes',
-                    data:product
+                    message: 'succes',
+                    data: product
                 }
-            )
+            );
         }
     )
     .catch(
@@ -54,26 +56,26 @@ const getProductById=(req,res,next)=>{
             console.log('error', error);
             res.status(500).json(
                 {
-                    message:'failed',
-                    error:error
+                    message: 'failed',
+                    error: error
                 }
-            )
+            );
         }
     )
-}
+};
 
-// get first product in db
-const getAllProducts =(req,res,next)=>{
+// get all products in db
+const getAllProducts = async (req,res,next) => {
     // get products from db 
-    getAllProductsFromDb()
+    await getAllProductsFromDb()
     .then(
         products=>{
             res.status(200).json(
                 {
-                    message:'success',
-                    data:products
+                    message: 'success',
+                    data: products
                 }
-            )
+            );
         }
     )
     .catch(
@@ -81,29 +83,29 @@ const getAllProducts =(req,res,next)=>{
             console.log('error', error);
             res.status(500).json(
                 {
-                    message:'failed',
-                    error:error
+                    message: 'failed',
+                    error: error
                 }
-                )
+            );
         }
     )
 
-}
+};
 
 // delete product
-const deleteProduct =(req,res,next)=>{
+const deleteProduct = async (req,res,next) => {
     // get the product id from params
-    const productId=req.params.id;
+    const productId = req.params.id;
     // delete product from db 
-    deleteFromDb(productId)
+    await deleteFromDb(productId)
     .then(
-        product=>{
+        product => {
             res.status(200).json(
                 {
-                    message:'success',
-                    data:product
+                    message: 'success',
+                    data: product
                 }
-            )
+            );
         }
     )
     .catch(
@@ -111,14 +113,13 @@ const deleteProduct =(req,res,next)=>{
             console.log('error', error);
             res.status(500).json(
                 {
-                    message:'failed',
-                    error:error
+                    message: 'failed',
+                    error: error
                 }
-            )
+            );
         }
     )
 
-}
-
+};
 
 export {getProductById,getAllProducts, deleteProduct, createProduct};

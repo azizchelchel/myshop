@@ -3,14 +3,7 @@ import {createUser, deleteUser} from '../controllers/users.controller.js';
 import {jwtProtector} from './protectors/authProtector.js';
 const router = express.Router();
 
-
-// create new user
-router.post('/createUser',jwtProtector , createUser);
-
-// delete user
-router.put('/deleteUser',jwtProtector , deleteUser);
-
-
-
+router.post('/createUser', jwtProtector, createUser);  //create new user
+router.put('/deleteUser', jwtProtector, deleteUser);   //delete user
 
 export default router;

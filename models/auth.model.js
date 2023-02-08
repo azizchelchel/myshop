@@ -1,19 +1,19 @@
 import Prisma from '@prisma/client';
-import {sendVerificationEmail}  from '../controllers/auth.controller.js';
+import {sendVerificationEmail} from '../controllers/auth.controller.js';
 import bcrypt from 'bcryptjs';
 const prisma = new Prisma.PrismaClient();
 
-
-// check for user in db and insert it or reject
-
+// check for user in db and insert it or reject error
 export const checkAndInsertUser = (user,res) => {
   return new Promise(
     (resolve, reject) => {
-      prisma.Users.findUnique({
-          where:{
+      // controll uniqueness of phone number
+      prisma.Users.findUnique(
+        {
+          where: {
             phoneNumber:{
-              countryCode:user.countryCode,
-              number:user.number
+              countryCode: user.countryCode,
+              number: user.number
             }
           }
         }
@@ -23,71 +23,81 @@ export const checkAndInsertUser = (user,res) => {
           if (foundUser) {
             await prisma.$disconnect();
             reject("this phone number is in use, try another.");
-          } else {
-            prisma.Users.findUnique({
-              where:{
-                  email:user.email,
-              }
-            }
-          )
-          .then(
-            async (foundUser) => {
-              if (foundUser) {
-                await prisma.$disconnect();
-                reject("this email is in use, try another.");
-              }
-              else{
-                console.log(user.password)
-                bcrypt.hash(user.password, 10, (error,hashedPassword) => {
-                  if (error){
-                    console.log(error);
-                    prisma.$disconnect();
-                    reject('system error, hash failure')
-                  }else{
-                    prisma.Users.create(
-                      {
-                        data:{
-                          fname: user.fname,
-                          lname:user.lname,
-                          countryCode:user.countryCode,
-                          number:user.number,
-                          email:user.email,
-                          address: user.address,
-                          password:hashedPassword,
-                          isDeleted:false,
-                          verified:false
-                        }
-                      }
-                    )
-                    .then(
-                      (userInDb) => {
-                        // send a verification email
-                        sendVerificationEmail(userInDb,res);
-                      }
-                    )
-                    .catch(
-                      async (error) => {
-                      console.log("can't save in db " + error);
-                      await prisma.$disconnect();
-                      reject("can't save record in DB.");
-                      }
-                    );
-                  } 
+          }
+          else
+          {
+            // control uniqueness of email
+            prisma.Users.findUnique(
+              {
+                where: {
+                    email: user.email,
                 }
-                )    
               }
-            }
-          )
-          .catch(
-            (error) => {
-              console.error(error);
-              prisma.$disconnect();
-              res.status(500).json({
-                "status":"failed",
-                "message":"system error, db error"
-              })
-            }
-          )
+            )
+            .then(
+              async (foundUser) => {
+                if (foundUser) {
+                  await prisma.$disconnect();
+                  reject("this email is in use, try another.");
+                }
+                else
+                {
+                  console.log(user.password);
+                  // hash the password
+                  bcrypt.hash(user.password, 10, (error,hashedPassword) => {
+                    if (error){
+                      console.log(error);
+                      prisma.$disconnect();
+                      reject('system error, hash failure')
+                    }
+                    else
+                    {
+                      prisma.Users.create(
+                        {
+                          data: {
+                            fname: user.fname,
+                            lname: user.lname,
+                            countryCode: user.countryCode,
+                            number: user.number,
+                            email: user.email,
+                            address: user.address,
+                            password: hashedPassword,
+                            isDeleted: false,
+                            verified: false
+                          }
+                        }
+                      )
+                      .then(
+                        (userInDb) => {
+                          // send a verification email
+                          sendVerificationEmail(userInDb,res);
+                        }
+                      )
+                      .catch(
+                        async (error) => {
+                          console.log("can't save in db " + error);
+                          await prisma.$disconnect();
+                          reject("can't save record in DB.");
+                        }
+                      );
+                    } 
+                  }
+                  )    
+                }
+              }
+            )
+            .catch(
+              async (error) => {
+                console.error(error);
+                await prisma.$disconnect();
+                res.status(500).json(
+                  {
+                    "status": "failed",
+                    "message": "system error, db error"
+                  }
+                )
+              }
+            )
           }
         }
       )
@@ -102,15 +112,13 @@ export const checkAndInsertUser = (user,res) => {
   );
 };
 
-
-
+// check if email exists 
 export const checkEmailPassword = (email, password) => {
-  // check if email exists
-  //yes---->hash password & compare to password in db
-  //no----> error  not signed in yet
+  // check if email exists -->| yes---->hash password & compare to password stored in db
+  //                          | no----> error  not signed in yet  
   return new Promise(
-    (resolve, reject) => {
-      prisma.Users.findUnique({ where:{email:email} })
+    async (resolve, reject) => {
+      await prisma.Users.findUnique({ where: {email: email} })
       .then(
         async (foundUser) => {
           if (foundUser) {
@@ -120,11 +128,12 @@ export const checkEmailPassword = (email, password) => {
             .then(
               async (same) => {
                 if (same) {
-                  console.log(foundUser.id);
                   console.log('the password is correct');
                   await prisma.$disconnect();
                   resolve(foundUser.id);
-                } else {
+                }
+                else
+                {
                   console.log('password incorrect');
                   await prisma.$disconnect();
                   reject("email or password incorrect, retry");
@@ -138,7 +147,9 @@ export const checkEmailPassword = (email, password) => {
                 reject("system error, bcrypt comparison operation has failed");
               }
             );
-          }else{
+          }
+          else
+          {
             // email not found in DB
             console.log("email incorrect");
             await prisma.$disconnect();
@@ -147,8 +158,8 @@ export const checkEmailPassword = (email, password) => {
         }
       )
       .catch(
-        async (err) => {
-          console.error("internal system error " + err);
+        async (error) => {
+          console.error("internal system error " + error);
           await prisma.$disconnect();
           reject("db unrequestable");
         }
@@ -157,56 +168,65 @@ export const checkEmailPassword = (email, password) => {
   );
 };
 
+// verifying userId and unique string recieved in request
 
-// verifying userId and unique string recieved in email
-
-export const emailVerification = (req, res, next) => {
+export const emailVerification = async (req, res, next) => {
     let {userId, uniqueString} = req.params; 
-    prisma.userverifications.findUnique({
-      where:{userId:userId.toString()}
-    })
+    await prisma.userverifications.findUnique(
+      {
+        where: {userId: userId.toString()}
+      }
+    )
     .then(
-      (result) => {
+      async (result) => {
         if (result){
           const expiresAt = result.expiresAt;
           const hashedUniqueString = result.uniqueString;
-          if(expiresAt < Date.now()){//message has expired
+          if(expiresAt < Date.now()){    //message has expired
             //delete the user verification record from DB
             console.log('received email has expired, please resign up.');
             // delete userVerification record
-            prisma.userverifications.delete({
-              where:{
-                userId:result.userId
+            await prisma.userverifications.delete(
+              {
+                where:{
+                  userId: result.userId
+                }
               }
-            })
+            )
             .then(
-              () => {
-                // delete user record
-                prisma.Users.update({
-                  where:{
-                    userId:parseInt(userId)
-                  },
-                  data:{
-                    isDeleted:true
+              async () => {
+                // delete user record from users table
+                await prisma.Users.update(
+                  {
+                    where: {
+                      userId: parseInt(userId)
+                    },
+                    data: {
+                      isDeleted: true
+                    }
                   }
-                })
+                )
                 .then(
                   (deleted) => {
-                    res.status(100).json({
-                      "status": "failed",
-                      "message":"Link has expired. please sign up again",
-                      "data":deleted
-                    })
+                    res.status(100).json(
+                      {
+                        "status": "failed",
+                        "message":"Link has expired. please sign up again",
+                        "data":deleted
+                      }
+                    );
                   }
                 )
                 .catch(
                   (error) => {
                     console.log(error);
-                    res.status(500).json({
-                      "status": "failed",
-                      "message": "system error, clearing user whith expired unique string failed",
-                      "error": error
-                    })
+                    res.status(500).json(
+                      {
+                        "status": "failed",
+                        "message": "system error, clearing user whith expired unique string failed",
+                        "error": error
+                      }
+                    );
                   }
                 )
               }
@@ -214,46 +234,50 @@ export const emailVerification = (req, res, next) => {
             .catch(
               (error) => {
                 console.log(error);
-                res.status(500).json({
-                  "status": "filed",
-                  "message": 'system error, clearing expiring user verification failed',
-                  "error":error
-                });
+                res.status(500).json(
+                  {
+                    "status": "filed",
+                    "message": 'system error, clearing expiring user verification failed',
+                    "error": error
+                  }
+                );
               }
             ) 
-          }else{
+          }
+          else
+          {
             // valid record exists so we validate the user string
             // first compare the hashed unique string to the one sent by the user
-            bcrypt.compare(uniqueString, hashedUniqueString)
+            await bcrypt.compare(uniqueString, hashedUniqueString)
             .then(
-              async (result) => {// the stings match.
-                console.log("result "+result)
+              async (result) => {             // the strings match.
+                console.log("result " + result)
                 if(result){
                   // update user status "verified" to true
                   await prisma.Users.update(
                     {
-                      where:{
-                        id:parseInt(userId)
+                      where: {
+                        id: parseInt(userId)
                       },
-                      data:{
-                        verified:true
+                      data: {
+                        verified: true
                       }
-
                     }
                   )
                   .then(
                     (updated) => {
-                      res.status(200).json({
-                        "status":"success",
-                        "message":"congratulation you have successfully signned up, now you can log in ",
-                        "data": "data"
-                      });
+                      res.status(200).json(
+                        {
+                          "status": "success",
+                          "message": "congratulation you have successfully signned up, now you can log in ",
+                          "data": updated
+                        }
+                      );
                     }
                   )
                   .catch(
                     (error) => {
                       console.log(error);
-                      let message = "an error occcured while finalizing successful verification.";
                       res.status(500).json({
                         "status": "failed",
                         "message": 'system error, updating verified user status failed',
@@ -261,47 +285,56 @@ export const emailVerification = (req, res, next) => {
                       });
                     }
                   ) 
-                }else{
-                  res.status(500).json({
-                    "status": "failed",
-                    "message": "Invalid verification detailes passed. check your inbox."
-                  });
+                }
+                else
+                {
+                  res.status(500).json(
+                    {
+                      "status": "failed",
+                      "message": "Invalid verification detailes passed. check your inbox."
+                    }
+                  );
                 }
               }
             )
             .catch(
               (error) => {
                 console.log(error)
-                res.status(500).json({
-                  "status": "failed",
-                  "message": "system error occured when comparing strings.",
-                  "error":error
-                });
+                res.status(500).json(
+                  {
+                    "status": "failed",
+                    "message": "system error occured when comparing strings.",
+                    "error": error
+                  }
+                );
               }
             )
           }
   
-        }else{
-          console.log(result)
-          res.status(400).json({
-            "status": "failed",
-            "message":"account record doesn't exist or has been already verified. please sign up or sign in."
-          });
+        }
+        else
+        {
+          res.status(400).json(
+            {
+              "status": "failed",
+              "message": "account record doesn't exist or has been already verified. please sign up or sign in."
+            }
+          );
         }
       }
     )
     .catch(
       (error) => {
-        console.log(error)
-        res.status(500).json({
-          "status": "filed",
-          "message":"a system error occurred while checking for existing user cerification record",
-          "error":error
-        });
+        console.log(error);
+        res.status(500).json(
+          {
+            "status": "filed",
+            "message": "a system error occurred while checking for existing user cerification record",
+            "error": error
+          }
+        );
       }
     )
-  
-   
 };
 
 

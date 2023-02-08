@@ -10,12 +10,10 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-
-
 model Users {
   id            Int    @id @default(autoincrement())
 
-  personType          personTypes   @default(store_owner)
+  personType    personTypes   @default(store_owner)
 
   fname         String 
 

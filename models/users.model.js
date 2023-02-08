@@ -3,11 +3,7 @@ import bcrypt from 'bcryptjs';
 import{sendCredentials} from '../controllers/users.controller.js';
 const prisma = new Prisma.PrismaClient();
 
-
-
-
-
-// create a random string for password
+// create a random string for user password
 const makeid = (length) => {
   let result = '';
   const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -16,21 +12,23 @@ const makeid = (length) => {
   while (counter < length) {
     result += characters.charAt(Math.floor(Math.random() * charactersLength));
     counter += 1;
-  }
+  };
   return result;
 }
 
+// create new user
 
 export const insertUser = (user) => {
     //create random password 
     const password = makeid(15);
     return new Promise(
       (resolve, reject) => {
+        // controll uniqueness of phone number 
         prisma.Users.findUnique({
             where:{
               phoneNumber:{
-                countryCode:user.countryCode,
-                number:user.number
+                countryCode: user.countryCode,
+                number: user.number
               }
             }
           }
@@ -40,10 +38,11 @@ export const insertUser = (user) => {
             if (foundUser) {
               await prisma.$disconnect();
               reject("this phone number is in use, try another.");
-            } else {
+            } else {  
+              //controll uniqueness of email
               prisma.Users.findUnique({
                 where:{
-                    email:user.email,
+                    email: user.email,
                 }
               }
             )
@@ -54,26 +53,28 @@ export const insertUser = (user) => {
                   reject("this email is in use, try another.");
                 }
                 else{
-                  console.log(password)
+                  console.log(password);
+                  // hash the password
                   bcrypt.hash(password, 10, (error,hashedPassword) => {
                     if (error){
                       console.log(error);
                       prisma.$disconnect();
                       reject('system error, hash failure')
                     }else{
+                      // create record
                       prisma.Users.create(
                         {
                           data:{
-                            personType:user.personType,
+                            personType: user.personType,
                             fname: user.fname,
-                            lname:user.lname,
-                            countryCode:user.countryCode,
-                            number:user.number,
-                            email:user.email,
+                            lname: user.lname,
+                            countryCode: user.countryCode,
+                            number: ser.number,
+                            email: user.email,
                             address: user.address,
-                            password:hashedPassword,
-                            isDeleted:false,
-                            verified:false
+                            password: hashedPassword,
+                            isDeleted: false,
+                            verified: false
                           }
                         }
                       )
@@ -119,7 +120,7 @@ export const insertUser = (user) => {
     );
   };
   
-
+// delete user
 
 export const delUser = (data) => {
     return new Promise(
@@ -127,10 +128,10 @@ export const delUser = (data) => {
         await prisma.users.update(
           {
             where:{
-              id:data.id
+              id: data.id
             },
             data:{
-              isDeleted:true
+              isDeleted: true
             }
           }
         )
