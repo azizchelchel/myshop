@@ -1,22 +1,23 @@
+import nodemailer from'nodemailer';
+import {v4 as uuidv4} from 'uuid';
+import bcrypt from 'bcryptjs'
+import Prisma from '@prisma/client';
+import jwt from 'jsonwebtoken';
+
+import {transporter} from '../mailing/mails.js'
 import {
   checkAndInsertUser,
   checkEmailPassword
 } from "../models/auth.model.js";
 import {signupSchema, signinSchema} from '../routes/dataValidation/validator.js'
-import nodemailer from'nodemailer';
-import {v4 as uuidv4} from 'uuid';
-import bcrypt from 'bcryptjs'
-import Prisma from '@prisma/client';
+
+
 const prisma = new Prisma.PrismaClient();
-import jwt from 'jsonwebtoken';
-import {transporter} from '../mailing/mails.js'
-
-
-
-
-// send sign up credentials
 
 const postSignup = (req, res, next) => {
+  /* 
+  send sign up credentials
+  */
   // data validation
   const {error, value} = signupSchema.validate(req.body, {abortEarly:false});
   if (!error) {
@@ -26,6 +27,7 @@ const postSignup = (req, res, next) => {
       (user) => {
         res.status(200).send(
           {
+            "success":true,
             "status":"success",
             "message":"signed up successfully",
             "data":user
@@ -36,6 +38,7 @@ const postSignup = (req, res, next) => {
     .catch(
       (error) => {
         res.status(400).send({
+          "success":false,
           "message":"an error occured",
           "error":error
         })
@@ -49,16 +52,18 @@ const postSignup = (req, res, next) => {
       }
     )
     res.status(400).send({
+      "success":false,
       "message":"user errors, check the data you have inserted",
       "errors":messages
-      
     });
   }
 };
 
-// post login credentials
 
 const postSignin = (req, res, next) => {
+  /*
+  // post login credentials
+  */
   const {email, password} = req.body;
   const {error, value} = signinSchema.validate(req.body, {abortEarly:false});
   if (!error){
@@ -67,6 +72,7 @@ const postSignin = (req, res, next) => {
       (id) => {
         res.status(200).json(
           {
+            "success":true,
             "status":"success",
             "message":"sign in success",
             userId:id,
@@ -84,6 +90,7 @@ const postSignin = (req, res, next) => {
       (error) => {
         console.log(error)
         res.status(500).json({
+          "success":false,
           "message":"error",
           "error":error
         });
@@ -97,6 +104,7 @@ const postSignin = (req, res, next) => {
         }
       );
       res.status(400).send({
+        "success":false,
         "message ":"user errors, check the data you have inserted",
         "errors ":messages
       });
@@ -129,7 +137,8 @@ const sendVerificationEmail=(userInDb, res)=>{
   const saltrounds = 10;
   bcrypt.hash(uniqueString, saltrounds)
   .then( 
-    async (hashedUniqueString) => {//hashing process successful
+    async (hashedUniqueString) => {
+      //hashing process successful
 
       console.log(hashedUniqueString);
       console.log(uniqueString);  
@@ -151,6 +160,7 @@ const sendVerificationEmail=(userInDb, res)=>{
             if(mailSent){
               res.status(200).json(
                 {
+                  "success":true,
                   "status":"pending",
                   "message":"verification email is sent",
                   "id":id,
@@ -164,6 +174,7 @@ const sendVerificationEmail=(userInDb, res)=>{
             }else{
               res.status(500).json(
                 {
+                  "success":false,
                   "status":"failed",
                   "message":"system error, sending verification email has failed",
                 }
@@ -175,6 +186,7 @@ const sendVerificationEmail=(userInDb, res)=>{
           (error) => {
             console.log(error)
             res.status(400).json({
+              "success":false,
               "status":"failed",
               "message":"failed to send mail"
             })
@@ -186,6 +198,7 @@ const sendVerificationEmail=(userInDb, res)=>{
       (error) => {
         console.log(error);
         res.status(500).json({
+          "success":false,
           "status":"failed",
           "message":"error on writing in db"
         })
@@ -197,12 +210,12 @@ const sendVerificationEmail=(userInDb, res)=>{
     (error) => {
       console.log(error)
       res.status(500).json({
+        "success":false,
         "status":"failed",
         "message":"system error hash failure"
       })
     }
   )
-
 };
 
 
