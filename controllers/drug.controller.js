@@ -1,5 +1,6 @@
 
 import {
+    updateDrugInDb,
     createDrugInDb,
     getAllDrugsFromDb,
     findDrugInDb,
@@ -45,6 +46,34 @@ const createDrug = async (req,res,next) => {
         }
     )
 };
+
+// update drug
+const updateDrug = (req,res,next) => {
+    // new data to update with
+    const data = req.body;
+    updateDrugInDb(data)
+    .then(
+       (data) => {
+            res.status(200).json(
+                {
+                    "meaasage": "success",
+                    "data":data 
+                }
+            )
+       }
+    )
+    .catch(
+        async (error) => {
+            console.log(error);
+            res.status(500).json(
+                {
+                    "message": "failed",
+                    "error": error
+                }
+            );
+        }
+    )
+}
 
 // get drug from db
 const getDrugById = async (req,res,next) => {
@@ -136,6 +165,7 @@ const deleteDrug = async (req,res,next) => {
 };
 
 export { 
+    updateDrug,
     createDrug,
     deleteDrug,
     getAllDrugs,

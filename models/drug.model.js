@@ -34,6 +34,40 @@ const createDrugInDb = (data) => {
     )
 };
 
+// update drug
+
+const updateDrugInDb = (data) => {
+    return new Promise (
+        async (resolve, reject) => {
+            await prisma.drug.update(
+                {
+                    where: {
+                        drug_id: parseInt(data.drug_id)
+                    },
+                    data: {
+                        forme: data.forme,
+                        libelle: data.libelle,
+                        libelle_court: data.libelle_court,
+                    }
+                }
+            )
+            .then(
+                async (updatedDrug) => {
+                    await prisma.$disconnect();
+                    resolve(updatedDrug);
+                }
+            )
+            .catch(
+                async (error) => {
+                    console.log(error);
+                    await prisma.$disconnect();
+                    reject('system error update failed');
+                }
+            )
+        }
+    )
+}
+
 // find all the drugs
 const getAllDrugsFromDb = () => {
     return new Promise(
@@ -128,6 +162,7 @@ const deleteDrugFromDb = (id) => {
 };
 
 export  { 
+    updateDrugInDb,
     createDrugInDb,
     getAllDrugsFromDb,
     deleteDrugFromDb,
