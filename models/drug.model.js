@@ -2,26 +2,52 @@ import Prisma from '@prisma/client';
 const prisma = new Prisma.PrismaClient();
 
 // create new product in DB
-const createProductInDb = (data) => {
+const createDrugInDb = (data) => {
     return new Promise(
         async (resolve,reject) => {
             // create product
-            await prisma.products.create(
+            await prisma.drug.create(
                 {
                     data: {
-                        name: data.name,
-                        image: data.image,
-                        price: data.price,
-                        description: data.description,
-                        category: data.category
+                        forme: data.forme,
+                        libelle: data.libelle,
+                        libelle_court: data.libelle_court                        
                     }
                 }
             )
             .then(
-                async product => {
-                    console.log(product)
+                async drug => {
+                    console.log(drug)
                     await prisma.$disconnect();
-                    resolve(product);
+                    resolve(drug);
+                }
+            )
+            .catch(
+                async (error) => {
+                    console.log(error);
+                    console.log("ddd");
+                    await prisma.$disconnect();
+                    reject(error );
+                }
+            )  
+        }
+    )
+};
+
+// find all the drugs
+const getAllDrugsFromDb = () => {
+    return new Promise(
+        async (resolve,reject) => {
+            // return all drugs
+            await prisma.drug.findMany(
+                {
+                    where: {isDeleted: false}
+                }
+            )
+            .then(
+                drugs => {
+                    prisma.$disconnect();
+                    resolve(drugs);
                 }
             )
             .catch(
@@ -35,23 +61,25 @@ const createProductInDb = (data) => {
     )
 };
 
-// find product by id in db
 
-const findProductInDb = (id) => {
+// find drug by id in db
+
+const findDrugInDb = (id) => {
     return new Promise(
         async(resolve,reject) => {
-            // find product
-            await prisma.products.findUnique(
+            // find drug
+            await prisma.drug.findUnique(
                 {
                     where: {
-                        product_id: parseInt(id),
+                        drug_id: id
                     }
                 }
             )
             .then(
-                async (product) => {
+                async (drug) => {
+                    console.log(drug)
                     await prisma.$disconnect();
-                    resolve(product);
+                    resolve(drug);
                 }
             )
             .catch(
@@ -65,43 +93,16 @@ const findProductInDb = (id) => {
     )
 };
 
-// find the first product in db
-const getAllProductsFromDb = () => {
+// delete drug from db
+
+const deleteDrugFromDb = (id) => {
     return new Promise(
         async (resolve,reject) => {
-            // return all products
-            await prisma.products.findMany(
-                {
-                    where: {isDeleted: false}
-                }
-            )
-            .then(
-                products => {
-                    prisma.$disconnect();
-                    resolve(products);
-                }
-            )
-            .catch(
-                async (error) => {
-                    console.log(error);
-                    await prisma.$disconnect();
-                    reject(error );
-                }
-            )  
-        }
-    )
-};
-
-// delete product
-
-const deleteFromDb = (id) => {
-    return new Promise(
-        async (resolve,reject) => {
-            // soft delete product     
-            await prisma.products.update(
+            // soft delete drug     
+            await prisma.drug.update(
                 {
                     where: {
-                        product_id: parseInt(id)
+                        drug_id: id
                     },
                     data: {
                         isDeleted: true
@@ -110,9 +111,9 @@ const deleteFromDb = (id) => {
                 }
             )
             .then(
-                product => {
-                    prisma.$disconnect();
-                    resolve(product);
+                async drug => {
+                    await prisma.$disconnect();
+                    resolve(drug);
                 }
             )
             .catch(
@@ -126,4 +127,9 @@ const deleteFromDb = (id) => {
     )
 };
 
-export  {findProductInDb, getAllProductsFromDb, deleteFromDb, createProductInDb};
+export  { 
+    createDrugInDb,
+    getAllDrugsFromDb,
+    deleteDrugFromDb,
+    findDrugInDb
+};

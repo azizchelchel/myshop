@@ -69,7 +69,7 @@ export const insertUser = (user) => {
                             fname: user.fname,
                             lname: user.lname,
                             countryCode: user.countryCode,
-                            number: ser.number,
+                            number: user.number,
                             email: user.email,
                             address: user.address,
                             password: hashedPassword,
@@ -133,6 +133,11 @@ export const delUser = (data) => {
             data:{
               isDeleted: true
             }
+          }
+        ).then(
+          async (user) => {
+            await prisma.$disconnect();
+            resolve(user);
           }
         )
         .catch(

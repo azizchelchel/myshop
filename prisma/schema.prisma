@@ -13,7 +13,7 @@ datasource db {
 model Users {
   id            Int    @id @default(autoincrement())
 
-  personType    personTypes   @default(store_owner)
+  personType    PersonTypes   @default(store_owner)
 
   fname         String 
 
@@ -58,9 +58,17 @@ model Products {
     isDeleted   Boolean @default(false)
 }
 
-enum personTypes {
+enum PersonTypes {
   store_owner
   supplier
   employee
   client
+}
+
+model Drug {
+  drug_id       Int      @id    @default(autoincrement())
+  forme         String   @unique   
+  libelle       String
+  libelle_court String
+  isDeleted     Boolean  @default(false)
 }
