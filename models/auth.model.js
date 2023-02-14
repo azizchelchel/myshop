@@ -210,7 +210,7 @@ export const emailVerification = async (req, res, next) => {
                   (deleted) => {
                     res.status(100).json(
                       {
-                        "status": "failed",
+                        "status": false,
                         "message":"Link has expired. please sign up again",
                         "data":deleted
                       }
@@ -222,7 +222,7 @@ export const emailVerification = async (req, res, next) => {
                     console.log(error);
                     res.status(500).json(
                       {
-                        "status": "failed",
+                        "status": false,
                         "message": "system error, clearing user whith expired unique string failed",
                         "error": error
                       }
@@ -236,7 +236,7 @@ export const emailVerification = async (req, res, next) => {
                 console.log(error);
                 res.status(500).json(
                   {
-                    "status": "filed",
+                    "status": false,
                     "message": 'system error, clearing expiring user verification failed',
                     "error": error
                   }
@@ -268,7 +268,7 @@ export const emailVerification = async (req, res, next) => {
                     (updated) => {
                       res.status(200).json(
                         {
-                          "status": "success",
+                          "status": true,
                           "message": "congratulation you have successfully signned up, now you can log in ",
                           "data": updated
                         }
@@ -279,7 +279,7 @@ export const emailVerification = async (req, res, next) => {
                     (error) => {
                       console.log(error);
                       res.status(500).json({
-                        "status": "failed",
+                        "status": false,
                         "message": 'system error, updating verified user status failed',
                         "error":error
                       });
@@ -290,7 +290,7 @@ export const emailVerification = async (req, res, next) => {
                 {
                   res.status(500).json(
                     {
-                      "status": "failed",
+                      "status": false,
                       "message": "Invalid verification detailes passed. check your inbox."
                     }
                   );
@@ -302,7 +302,7 @@ export const emailVerification = async (req, res, next) => {
                 console.log(error)
                 res.status(500).json(
                   {
-                    "status": "failed",
+                    "status": false,
                     "message": "system error occured when comparing strings.",
                     "error": error
                   }
@@ -316,7 +316,7 @@ export const emailVerification = async (req, res, next) => {
         {
           res.status(400).json(
             {
-              "status": "failed",
+              "status": false,
               "message": "account record doesn't exist or has been already verified. please sign up or sign in."
             }
           );
@@ -328,7 +328,7 @@ export const emailVerification = async (req, res, next) => {
         console.log(error);
         res.status(500).json(
           {
-            "status": "filed",
+            "status": false,
             "message": "a system error occurred while checking for existing user cerification record",
             "error": error
           }
