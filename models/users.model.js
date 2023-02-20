@@ -73,8 +73,6 @@ export const insertUser = (user) => {
                             email: user.email,
                             address: user.address,
                             password: hashedPassword,
-                            isDeleted: false,
-                            verified: false
                           }
                         }
                       )
@@ -119,6 +117,17 @@ export const insertUser = (user) => {
       }
     );
   };
+
+  // update user
+
+  
+export const updateUserInDb = (data, id) => {
+  return new Promise (
+      async (resolve, reject) => {
+      }
+  )
+}
+
   
 // delete user
 
@@ -149,4 +158,36 @@ export const delUser = (data) => {
         )
       }
     )
+}
+
+// update permissions
+
+export const updatePermissionsInDb = (permissions, id) => {
+  return new Promise (
+      async (resolve, reject) => {
+          await prisma.users.update(
+              {
+                  where: {
+                      id: parseInt(id)
+                  },
+                  data: {
+                      permissions: permissions,
+                  }
+              }
+          )
+          .then(
+              async (updatedUser) => {
+                  await prisma.$disconnect();
+                  resolve(updatedUser);
+              }
+          )
+          .catch(
+              async (error) => {
+                  console.log(error);
+                  await prisma.$disconnect();
+                  reject('system error update failed');
+              }
+          )
+      }
+  )
 }

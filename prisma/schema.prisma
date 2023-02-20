@@ -11,64 +11,69 @@ datasource db {
 }
 
 model Users {
-  id            Int    @id @default(autoincrement())
+  id Int @id @default(autoincrement())
 
-  personType    PersonTypes   @default(store_owner)
+  personType PersonTypes @default(store_owner)
 
-  fname         String 
+  fname String
 
-  lname         String 
+  lname String
 
-  countryCode   String 
+  countryCode String
 
-  number        Int
+  number Int
+
+  email String @unique
+
+  address String
+
+  password String
+
+  verified Boolean @default(false)
+
+  isDeleted Boolean @default(false)
+
+  permissions Json? @default("{}")
 
   @@unique(fields: [countryCode, number], name: "phoneNumber")
-
-  email         String  @unique
-
-  address       String
-
-  password      String
-
-  verified      Boolean  @default(false)
-
-  isDeleted     Boolean  @default(false)
-
 }
 
 model Userverifications {
-  userId       String  @id @unique
+  userId String @id @unique
 
-  uniqueString String 
+  uniqueString String
 
-  createdAt    DateTime @default(now())
+  createdAt DateTime @default(now())
 
-  expiresAt    DateTime
-
+  expiresAt DateTime
 }
 
 model Products {
-    product_id  Int    @unique @default(autoincrement())
-    name        String
-    image       String
-    price       Int
-    description String
-    category    String
-    isDeleted   Boolean @default(false)
+  product_id  Int     @unique @default(autoincrement())
+  name        String
+  image       String
+  price       Int
+  description String
+  category    String
+  isDeleted   Boolean @default(false)
 }
 
 enum PersonTypes {
   store_owner
-  supplier
   employee
+  supplier
   client
 }
 
 model Drug {
-  drug_id       Int      @id    @default(autoincrement())
-  forme         String   @unique   
+  drug_id       Int     @id @default(autoincrement())
+  forme         String  @unique
   libelle       String
   libelle_court String
-  isDeleted     Boolean  @default(false)
+  isDeleted     Boolean @default(false)
+}
+
+model Permissions {
+  permissionCode String @unique
+  permissionName String
 }

@@ -3,7 +3,8 @@ import {
     createProductInDb,
     getAllProductsFromDb,
     findProductInDb,
-    deleteFromDb
+    deleteProductFromDb,
+    updateProductInDb
 } from '../models/product.model.js';
 
 // create new product
@@ -16,8 +17,9 @@ const createProduct = async (req,res,next) => {
         product => {
             res.status(200).json(
                 {
-                    message: 'succes',
-                    data: product
+                    succes: true,
+                    message: 'pruduct creation success',
+                    product: product
                 }
             );
         }
@@ -27,7 +29,8 @@ const createProduct = async (req,res,next) => {
             console.log('error', error);
             res.status(500).json(
                 {
-                    message: 'failed',
+                    success: false,
+                    message: 'system error',
                     error: error
                 }
             );
@@ -45,8 +48,9 @@ const getProductById = async (req,res,next) => {
         product => {
             res.status(200).json(
                 {
-                    message: 'succes',
-                    data: product
+                    succes: true,
+                    message: 'get product success',
+                    product: product
                 }
             );
         }
@@ -56,7 +60,8 @@ const getProductById = async (req,res,next) => {
             console.log('error', error);
             res.status(500).json(
                 {
-                    message: 'failed',
+                    success: false,
+                    message: 'system error',
                     error: error
                 }
             );
@@ -72,8 +77,9 @@ const getAllProducts = async (req,res,next) => {
         products=>{
             res.status(200).json(
                 {
-                    message: 'success',
-                    data: products
+                    success: true,
+                    message: 'get products success',
+                    products: products
                 }
             );
         }
@@ -83,7 +89,8 @@ const getAllProducts = async (req,res,next) => {
             console.log('error', error);
             res.status(500).json(
                 {
-                    message: 'failed',
+                    success: false,
+                    message: 'system error',
                     error: error
                 }
             );
@@ -97,13 +104,14 @@ const deleteProduct = async (req,res,next) => {
     // get the product id from params
     const productId = req.params.id;
     // delete product from db 
-    await deleteFromDb(productId)
+    await deleteProductFromDb(productId)
     .then(
         product => {
             res.status(200).json(
                 {
-                    message: 'success',
-                    data: product
+                    success: true,
+                    message: 'delete product success',
+                    product: product
                 }
             );
         }
@@ -113,7 +121,8 @@ const deleteProduct = async (req,res,next) => {
             console.log('error', error);
             res.status(500).json(
                 {
-                    message: 'failed',
+                    success: false,
+                    message: 'system error',
                     error: error
                 }
             );
@@ -122,4 +131,43 @@ const deleteProduct = async (req,res,next) => {
 
 };
 
-export {getProductById,getAllProducts, deleteProduct, createProduct};
+// update product
+const updateProduct = async (req,res,next) => {
+    // get the product id from params
+    const productId = req.params.id;
+    // data to update
+    const data = req.body 
+    await updateProductInDb(data,productId)
+    .then(
+        product => {
+            res.status(200).json(
+                {
+                    success: true,
+                    message: 'update product success',
+                    product: product
+                }
+            );
+        }
+    )
+    .catch(
+        (error) => {
+            console.log('error', error);
+            res.status(500).json(
+                {
+                    success: false,
+                    message: 'system error',
+                    error: error
+                }
+            );
+        }
+    )
+
+};
+
+export {
+    getProductById,
+    getAllProducts,
+    deleteProduct,
+    createProduct,
+    updateProduct
+};

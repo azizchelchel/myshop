@@ -1,9 +1,18 @@
 import express from "express";
-import {createUser, deleteUser} from '../controllers/users.controller.js';
+import {
+    createUser,
+    deleteUser,
+    updateUser,
+    updatePermissions
+} from '../controllers/users.controller.js';
 import {jwtProtector} from './protectors/authProtector.js';
+import {verifyPermission} from './protectors/verifyPermissions.js';
+
 const router = express.Router();
 
-router.post('/createUser',  createUser);  //create new user
-router.put('/deleteUser', deleteUser);   //delete user
+router.post('/createUser', jwtProtector, verifyPermission('PC789'), createUser);                  //create new user
+router.delete('/deleteUser', jwtProtector, verifyPermission('PC321'), deleteUser);                //delete user
+router.put('/updateUser', updateUser);                                                            //update user
+router.put('/updatePermissions/:id', jwtProtector, verifyPermission('PC654'), updatePermissions); //update permissions
 
 export default router;

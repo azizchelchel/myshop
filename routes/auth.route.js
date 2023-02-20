@@ -9,16 +9,9 @@ import {jwtProtector} from './protectors/authProtector.js';
 
 const router = express.Router();
 
-// sign up route
-router.post("/postSignup", postSignup);
-
-// verify received verification email route
-router.get('/verify/:userId/:uniqueString', emailVerification)
-
-// sign in route
-router.post("/postSignin", postSignin);
-
-// sign out route
-router.all("/signout", jwtProtector, signout);
+router.post("/postSignup", postSignup);                          // sign up route
+router.post("/postSignin", postSignin);                          // sign in route
+router.all("/signout", jwtProtector, signout);                   // sign out route
+router.get('/verify/:userId/:uniqueString', emailVerification);  // verify received verification email route
 
 export default router;

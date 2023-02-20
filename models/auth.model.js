@@ -1,6 +1,8 @@
 import Prisma from '@prisma/client';
 import {sendVerificationEmail} from '../controllers/auth.controller.js';
 import bcrypt from 'bcryptjs';
+import {allPermissions} from './permissions.model.js'
+
 const prisma = new Prisma.PrismaClient();
 
 // check for user in db and insert it or reject error
@@ -17,7 +19,7 @@ export const checkAndInsertUser = (user,res) => {
             }
           }
         }
-      )
+      )  
       .then(
         async (foundUser) => {
           if (foundUser) {
@@ -62,8 +64,7 @@ export const checkAndInsertUser = (user,res) => {
                             email: user.email,
                             address: user.address,
                             password: hashedPassword,
-                            isDeleted: false,
-                            verified: false
+                            permissions: allPermissions
                           }
                         }
                       )
@@ -130,7 +131,7 @@ export const checkEmailPassword = (email, password) => {
                 if (same) {
                   console.log('the password is correct');
                   await prisma.$disconnect();
-                  resolve(foundUser.id);
+                  resolve(foundUser);
                 }
                 else
                 {

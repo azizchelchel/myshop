@@ -94,7 +94,7 @@ const getAllProductsFromDb = () => {
 
 // delete product
 
-const deleteFromDb = (id) => {
+const deleteProductFromDb = (id) => {
     return new Promise(
         async (resolve,reject) => {
             // soft delete product     
@@ -126,4 +126,38 @@ const deleteFromDb = (id) => {
     )
 };
 
-export  {findProductInDb, getAllProductsFromDb, deleteFromDb, createProductInDb};
+export const updateProductInDb = (data, id) => {
+    return new Promise (
+        async (resolve, reject) => {
+            await prisma.products.update(
+                {
+                    where: {
+                        product_id: parseInt(id)
+                    },
+                    data: {
+                        name: data.name,
+                        image: data.image,
+                        price: data.price,
+                        description: data.description,
+                        category: data.category
+                    }
+                }
+            )
+            .then(
+                async (updatedDrug) => {
+                    await prisma.$disconnect();
+                    resolve(updatedDrug);
+                }
+            )
+            .catch(
+                async (error) => {
+                    console.log(error);
+                    await prisma.$disconnect();
+                    reject('system error update failed');
+                }
+            )
+        }
+    )
+}
+
+export  {findProductInDb, getAllProductsFromDb, deleteProductFromDb, createProductInDb};

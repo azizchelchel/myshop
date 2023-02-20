@@ -1,8 +1,12 @@
-import {insertUser, delUser} from '../models/users.model.js';
+import {
+    insertUser,
+    delUser,
+    updateUserInDb,
+    updatePermissionsInDb
+} from '../models/users.model.js';
 import {transporter} from '../mailing/mails.js';
 
 // crete new user
-
 export const createUser = async (req,res,next) => {
     const data = req.body;
     await insertUser(data)
@@ -10,8 +14,13 @@ export const createUser = async (req,res,next) => {
         password => {
             res.status(200).json(
                 {
-                    username: data.email,
-                    password: password
+                    success: true,
+                    message: 'user inserted successfully',
+                    credentials: {
+                        email: data.email,
+                        password: password
+                    }
+                    
                 }
             );
         }
@@ -21,12 +30,47 @@ export const createUser = async (req,res,next) => {
             console.log(error);
             res.status(500).json(
                 {
-                    message: "failed",
+                    success: false,
+                    message: 'system error',
                     error: error
                 }
             );
         }
     )
+};
+
+// update user
+
+export const updateUser = async (req,res,next) => {
+    // get the product id from params
+    const userId = req.params.id;
+    // data to update
+    const data = req.body 
+    await updateUserInDb(data,userId)
+    .then(
+        product => {
+            res.status(200).json(
+                {
+                    success: true,
+                    message: 'update product success',
+                    product: product
+                }
+            );
+        }
+    )
+    .catch(
+        (error) => {
+            console.log('error', error);
+            res.status(500).json(
+                {
+                    success: false,
+                    message: 'system error',
+                    error: error
+                }
+            );
+        }
+    )
+
 };
 
 // soft delete user
@@ -38,8 +82,9 @@ export const deleteUser = async (req,res,next) => {
         user => {
             res.status(200).json(
                 {
+                    success: true,
                     message: "user deteleted successfully",
-                    data: user
+                    user: user
                 }
             );
         }
@@ -49,12 +94,47 @@ export const deleteUser = async (req,res,next) => {
             console.log(error);
             res.status(500).json(
                 {
-                    message: "failed",
+                    success: false,
+                    message: "system error",
                     error: error
                 }
             );
         }
     )
+};
+
+// update user's permissions
+
+export const updatePermissions = async (req,res,next) => {
+    // get the user's id from params
+    const userId = req.params.id;
+    // data to update
+    const permissions = req.body 
+    await updatePermissionsInDb(permissions,userId)
+    .then(
+        user => {
+            res.status(200).json(
+                {
+                    success: true,
+                    message: 'update permissions success',
+                    user: user
+                }
+            );
+        }
+    )
+    .catch(
+        (error) => {
+            console.log('error', error);
+            res.status(500).json(
+                {
+                    success: false,
+                    message: 'system error',
+                    error: error
+                }
+            );
+        }
+    )
+
 };
 
 

@@ -11,25 +11,15 @@ import {
 const createDrug = async (req,res,next) => {
     // get the data from request
     const data = req.body;
-    console.log(data)
     // create drug
     await createDrugInDb(data)
     .then(
         drug => {
             res.status(200).json(
                 {
-                    message: 'succes',
-                    data: drug
-                }
-            );
-        }
-    )
-    .then(
-        (drug) => {
-            res.status(200).json(
-                {
-                    message: 'creation of record succeded',
-                    error: drug
+                    success: true,
+                    message: 'drug created successfully',
+                    drug: drug
                 }
             );
         }
@@ -39,7 +29,8 @@ const createDrug = async (req,res,next) => {
             console.log('error', error);
             res.status(500).json(
                 {
-                    message: 'creation of record failed',
+                    success: false,
+                    message: 'drug update failed',
                     error: error
                 }
             );
@@ -53,11 +44,12 @@ const updateDrug = (req,res,next) => {
     const data = req.body;
     updateDrugInDb(data)
     .then(
-       (data) => {
+       (drug) => {
             res.status(200).json(
                 {
-                    "meaasage": "success",
-                    "data":data 
+                    success: true,
+                    message: 'drug updated successfully',
+                    drug: drug 
                 }
             )
        }
@@ -79,15 +71,15 @@ const updateDrug = (req,res,next) => {
 const getDrugById = async (req,res,next) => {
     // get the drug id from params
     const drug_id= parseInt(req.params.id);
-    console.log(drug_id)
     // get drug from db 
     await findDrugInDb(drug_id)
     .then(
         drug => {
             res.status(200).json(
                 {
-                    message: 'succes',
-                    data: drug
+                    success: true,
+                    message: 'getting drug succeeded',
+                    drug: drug
                 }
             );
         }
@@ -97,7 +89,8 @@ const getDrugById = async (req,res,next) => {
             console.log('error', error);
             res.status(500).json(
                 {
-                    message: 'failed',
+                    success: false,
+                    message: 'getting drug failed',
                     error: error
                 }
             );
@@ -113,8 +106,9 @@ const getAllDrugs = async (req,res,next) => {
         drugs=>{
             res.status(200).json(
                 {
-                    message: 'success',
-                    data: drugs
+                    success: true,
+                    message: 'getting all drugs succeeded',
+                    drugs: drugs
                 }
             );
         }
@@ -124,7 +118,8 @@ const getAllDrugs = async (req,res,next) => {
             console.log('error', error);
             res.status(500).json(
                 {
-                    message: 'failed',
+                    success: false,
+                    message: 'getting all drugs failed',
                     error: error
                 }
             );
@@ -144,8 +139,9 @@ const deleteDrug = async (req,res,next) => {
         drug => {
             res.status(200).json(
                 {
-                    message: 'success',
-                    data: drug
+                    success: true,
+                    message: 'drug deleted successfully',
+                    drug: drug
                 }
             );
         }
@@ -154,8 +150,9 @@ const deleteDrug = async (req,res,next) => {
         (error) => {
             console.log('error', error);
             res.status(500).json(
-                {
-                    message: 'failed',
+                { 
+                    success: false,
+                    message: 'drug deletion failed',
                     error: error
                 }
             );
