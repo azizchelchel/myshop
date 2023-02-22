@@ -121,32 +121,233 @@ export const insertUser = (user) => {
   // update user
 
   
-export const updateUserInDb = (data, id) => {
+export const updateUserInfoInDb = (data, id) => {
   return new Promise (
-      async (resolve, reject) => {
-      }
+    async (resolve, reject) => {
+      // control uniqueness of phone number
+      await prisma.users.findUnique(
+        {
+          where: {
+            id: parseInt(id)
+          }
+        }
+      )
+      .then(
+        async (founUser) => {
+          await prisma.users.findUnique(
+            {
+              where: {
+                phoneNumber:{
+                  countryCode: data.countryCode,
+                  number: parseInt(data.number)
+                }
+              }
+            }
+          )
+          .then(
+            async (foundUser) => {
+              // check if phone number is in use
+              if (foundUser && parseInt(foundUser.id) !== parseInt(id)) {
+                await prisma.$disconnect();
+                reject("phone number already in use");
+              }else{
+                // phone number is free, check email uniqueness
+                await prisma.Users.findUnique(
+                  {
+                    where: {
+                      email: data.email
+                    }
+                  }
+                )
+                .then(
+                  async (foundUser) => {
+                    // check if email is in use
+                    if (foundUser && parseInt(foundUser.id) !== parseInt(id)) {
+                      await prisma.$disconnect();
+                      reject("email already in use");
+                    }
+                    // it's ok we can update data
+                    const newPassword = makeid(15);   // generate a random password 
+                    // hash the random password
+                    bcrypt.hash(newPassword, 10,
+                      async (error, hashedPassword) => {
+                        if(error){
+                          console.log(error);
+                          prisma.$disconnect();
+                          reject('system error, hash failure')
+                        }
+                        else
+                        {
+                          // update data
+                          await prisma.Users.update(
+                            {
+                              where: {
+                                id: parseInt(id)
+                              },
+                              data: {
+                                "fname": data.fname,
+                                "lname": data.lname,
+                                "countryCode": data.countryCode,
+                                "number": data.number,
+                                "email":data.email,
+                                "password":hashedPassword,
+                                "address": data.address
+                              }
+                            }
+                          )
+                          .then(
+                            async (updatedUser) => {
+                              // send clear password in the response not the hashed one
+                              updatedUser.password = newPassword
+                              // send email of new credentials
+                              sendCredentials(updatedUser.email, newPassword);
+                              await prisma.$disconnect();
+                              resolve(updatedUser);
+                            }
+                          )
+                          .catch(
+                            async (error) => {
+                              console.log(error);
+                              await prisma.$disconnect();
+                              reject("internal system error, db error");
+                            }
+                          )
+                        }                     
+                      }
+                    );
+                  }
+                )
+                .catch(
+                  async (error) => {
+                    console.log(error);
+                    await prisma.$disconnect();
+                    reject("internal system error, db error");
+                  }
+                )
+              }
+            }
+          ) 
+          .catch(
+            async (error) => {
+              console.log(error);
+              await prisma.$disconnect();
+              reject("system error occured, db error");
+            }
+          )
+        }
+      )
+      .catch(
+        async (error) => {
+          console.log(error);
+          await prisma.$disconnect();
+          reject('internal system error, db error')
+        }
+      )
+    }
   )
-}
+};
+
+// self update password
+ 
+export const selfUpdatePasswordInDb = (data, id) => {
+  return new Promise (
+    async (resolve, reject) => {
+      const {password, newPassword} = data;
+      // control uniqueness of phone number
+      await prisma.users.findUnique(
+        {
+          where: {
+            id: parseInt(id)
+          }
+        }
+      )
+      .then(
+        async (foundUser) => {
+          if(foundUser){
+            // compare the old password and the new one  
+            bcrypt.compare(password, foundUser.password, async (error, isMatch) => {
+              if (error) {
+                await prisma.$disconnect();
+                reject('internal system error occured');
+              }
+              if(!isMatch){
+                // the password matches the hashed password in db
+                await prisma.$disconnect()
+                reject('password is incorrect, please try again');
+              }
+              // hash the new password
+              bcrypt.hash(newPassword, 10, async (error, hashedPassword) => {
+                if(error){
+                  await prisma.$disconnect();
+                  reject('internal system error occured, hash failure');
+                };
+                // update the password
+                await prisma.users.update(
+                  {
+                    where: {
+                      id: parseInt(id)
+                    },
+                    data: {
+                      password: hashedPassword
+                    }
+                  }
+                )
+                .then(
+                  async (updatedData) => {
+                    if(updatedData){
+                      await prisma.$disconnect();
+                      resolve(newPassword);
+                       // send email of new credentials
+                       sendCredentials(updatedData.email, newPassword);
+                    }
+                  }
+                )
+                .catch(
+                  async (error) => {
+                    console.log(error);
+                    await prisma.$disconnect();
+                    reject('internal system error, db error')
+                  }
+                )
+              })
+            })
+          }else{
+            await prisma.$disconnect();
+          reject(`user with user id (${id}) is not found`);
+          }
+        }
+      )
+      .catch(
+        async (error) => {
+          console.log(error);
+          await prisma.$disconnect();
+          reject('internal system error, db error')
+        }
+      )
+    }
+  )
+};
+
 
   
 // delete user
 
-export const delUser = (data) => {
+export const delUser = (userId) => {
     return new Promise(
       async (resolve,reject) => {
         await prisma.users.update(
           {
             where:{
-              id: data.id
+              id: userId
             },
             data:{
               isDeleted: true
             }
           }
         ).then(
-          async (user) => {
+          async (updatedData) => {
             await prisma.$disconnect();
-            resolve(user);
+            resolve(updatedData);
           }
         )
         .catch(
