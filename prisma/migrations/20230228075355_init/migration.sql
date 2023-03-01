@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE `item` ADD COLUMN `productPrice` DOUBLE NOT NULL DEFAULT 100;

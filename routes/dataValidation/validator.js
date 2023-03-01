@@ -30,7 +30,6 @@ export const signinSchema = Joi.object(
 );
 
 // update user schema
-
 export const updateUserInfoSchema = Joi.object(
     {
         fname: Joi.string().min(2).required(),
@@ -41,7 +40,6 @@ export const updateUserInfoSchema = Joi.object(
         address: Joi.string().min(5).required(),  
     }
 );
-
 
 // self update password schema
 

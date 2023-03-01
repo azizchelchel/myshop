@@ -35,6 +35,8 @@ model Users {
 
   permissions Json? @default("{}")
 
+  sales Sales[]
+
   @@unique(fields: [countryCode, number], name: "phoneNumber")
 }
 
@@ -65,15 +67,37 @@ enum PersonTypes {
   client
 }
 
+model Permissions {
+  permissionCode String @unique
+  permissionName String
+}
+
 model Drug {
   drug_id       Int     @id @default(autoincrement())
   forme         String  @unique
   libelle       String
   libelle_court String
+  price         Int     @default(0)
   isDeleted     Boolean @default(false)
+  item          Item[]
 }
 
-model Permissions {
-  permissionCode String @unique
-  permissionName String
+model Item {
+  itemId    Int   @id @unique @default(autoincrement())
+  drugId    Int
+  drugPrice Float @default(0)
+  quantity  Int
+  totalItem Float @default(0)
+  drug      Drug  @relation(fields: [drugId], references: [drug_id])
+  sales     Sales @relation(fields: [saleId], references: [saleId])
+  saleId    Int
+}
+
+model Sales {
+  saleId       Int      @id @default(autoincrement())
+  userId       Int
+  purchaseDate DateTime @default(now())
+  totalSale    Float?   @default(0)
+  items        Item[]
+  Users        Users    @relation(fields: [userId], references: [id])
 }

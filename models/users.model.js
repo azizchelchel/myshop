@@ -297,8 +297,8 @@ export const selfUpdatePasswordInDb = (data, id) => {
                     if(updatedData){
                       await prisma.$disconnect();
                       resolve(newPassword);
-                       // send email of new credentials
-                       sendCredentials(updatedData.email, newPassword);
+                      // send email of new credentials
+                      sendCredentials(updatedData.email, newPassword);
                     }
                   }
                 )
