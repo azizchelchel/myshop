@@ -113,7 +113,7 @@ export const getSalesByDateFromDb = (purchaseDate) => {
     return new Promise(
         async (resolve,reject) => {
             const toDay = new Date(purchaseDate); //purchcacseDate without time part
-            const dayAfter = new Date(date1.getTime()); 
+            const dayAfter = new Date(toDay.getTime()); 
             dayAfter.setDate(toDay.getDate() + 1); //purchcacseDate plus one day
             await prisma.sales.findMany(
                 {
