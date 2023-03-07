@@ -1,6 +1,8 @@
 import Prisma from '@prisma/client';
 import {sendVerificationEmail} from '../controllers/auth.controller.js';
 import bcrypt from 'bcryptjs';
+import {allPermissions} from './permissions.model.js'
+
 const prisma = new Prisma.PrismaClient();
 
 // check for user in db and insert it or reject error
@@ -17,7 +19,7 @@ export const checkAndInsertUser = (user,res) => {
             }
           }
         }
-      )
+      )  
       .then(
         async (foundUser) => {
           if (foundUser) {
@@ -62,8 +64,7 @@ export const checkAndInsertUser = (user,res) => {
                             email: user.email,
                             address: user.address,
                             password: hashedPassword,
-                            isDeleted: false,
-                            verified: false
+                            permissions: allPermissions
                           }
                         }
                       )
@@ -130,7 +131,7 @@ export const checkEmailPassword = (email, password) => {
                 if (same) {
                   console.log('the password is correct');
                   await prisma.$disconnect();
-                  resolve(foundUser.id);
+                  resolve(foundUser);
                 }
                 else
                 {
@@ -210,7 +211,7 @@ export const emailVerification = async (req, res, next) => {
                   (deleted) => {
                     res.status(100).json(
                       {
-                        "status": "failed",
+                        "status": false,
                         "message":"Link has expired. please sign up again",
                         "data":deleted
                       }
@@ -222,7 +223,7 @@ export const emailVerification = async (req, res, next) => {
                     console.log(error);
                     res.status(500).json(
                       {
-                        "status": "failed",
+                        "status": false,
                         "message": "system error, clearing user whith expired unique string failed",
                         "error": error
                       }
@@ -236,7 +237,7 @@ export const emailVerification = async (req, res, next) => {
                 console.log(error);
                 res.status(500).json(
                   {
-                    "status": "filed",
+                    "status": false,
                     "message": 'system error, clearing expiring user verification failed',
                     "error": error
                   }
@@ -268,7 +269,7 @@ export const emailVerification = async (req, res, next) => {
                     (updated) => {
                       res.status(200).json(
                         {
-                          "status": "success",
+                          "status": true,
                           "message": "congratulation you have successfully signned up, now you can log in ",
                           "data": updated
                         }
@@ -279,7 +280,7 @@ export const emailVerification = async (req, res, next) => {
                     (error) => {
                       console.log(error);
                       res.status(500).json({
-                        "status": "failed",
+                        "status": false,
                         "message": 'system error, updating verified user status failed',
                         "error":error
                       });
@@ -290,7 +291,7 @@ export const emailVerification = async (req, res, next) => {
                 {
                   res.status(500).json(
                     {
-                      "status": "failed",
+                      "status": false,
                       "message": "Invalid verification detailes passed. check your inbox."
                     }
                   );
@@ -302,7 +303,7 @@ export const emailVerification = async (req, res, next) => {
                 console.log(error)
                 res.status(500).json(
                   {
-                    "status": "failed",
+                    "status": false,
                     "message": "system error occured when comparing strings.",
                     "error": error
                   }
@@ -316,7 +317,7 @@ export const emailVerification = async (req, res, next) => {
         {
           res.status(400).json(
             {
-              "status": "failed",
+              "status": false,
               "message": "account record doesn't exist or has been already verified. please sign up or sign in."
             }
           );
@@ -328,7 +329,7 @@ export const emailVerification = async (req, res, next) => {
         console.log(error);
         res.status(500).json(
           {
-            "status": "filed",
+            "status": false,
             "message": "a system error occurred while checking for existing user cerification record",
             "error": error
           }

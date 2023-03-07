@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE `drug` MODIFY `drugPrice` INTEGER NOT NULL DEFAULT 100;

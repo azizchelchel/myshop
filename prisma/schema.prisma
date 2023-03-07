@@ -11,64 +11,93 @@ datasource db {
 }
 
 model Users {
-  id            Int    @id @default(autoincrement())
+  id Int @id @default(autoincrement())
 
-  personType    PersonTypes   @default(store_owner)
+  personType PersonTypes @default(store_owner)
 
-  fname         String 
+  fname String
 
-  lname         String 
+  lname String
 
-  countryCode   String 
+  countryCode String
 
-  number        Int
+  number Int
+
+  email String @unique
+
+  address String
+
+  password String
+
+  verified Boolean @default(false)
+
+  isDeleted Boolean @default(false)
+
+  permissions Json? @default("{}")
+
+  sales Sales[]
 
   @@unique(fields: [countryCode, number], name: "phoneNumber")
-
-  email         String  @unique
-
-  address       String
-
-  password      String
-
-  verified      Boolean  @default(false)
-
-  isDeleted     Boolean  @default(false)
-
 }
 
 model Userverifications {
-  userId       String  @id @unique
+  userId String @id @unique
 
-  uniqueString String 
+  uniqueString String
 
-  createdAt    DateTime @default(now())
+  createdAt DateTime @default(now())
 
-  expiresAt    DateTime
-
+  expiresAt DateTime
 }
 
 model Products {
-    product_id  Int    @unique @default(autoincrement())
-    name        String
-    image       String
-    price       Int
-    description String
-    category    String
-    isDeleted   Boolean @default(false)
+  product_id  Int     @unique @default(autoincrement())
+  name        String
+  image       String
+  price       Int
+  description String
+  category    String
+  isDeleted   Boolean @default(false)
 }
 
 enum PersonTypes {
   store_owner
-  supplier
   employee
+  supplier
   client
 }
 
+model Permissions {
+  permissionCode String @unique
+  permissionName String
+}
+
 model Drug {
-  drug_id       Int      @id    @default(autoincrement())
-  forme         String   @unique   
+  drug_id       Int     @id @default(autoincrement())
+  forme         String  @unique
   libelle       String
   libelle_court String
-  isDeleted     Boolean  @default(false)
+  price         Int     @default(0)
+  isDeleted     Boolean @default(false)
+  item          Item[]
+}
+
+model Item {
+  itemId    Int   @id @unique @default(autoincrement())
+  drugId    Int
+  drugPrice Float @default(0)
+  quantity  Int
+  totalItem Float @default(0)
+  drug      Drug  @relation(fields: [drugId], references: [drug_id])
+  sales     Sales @relation(fields: [saleId], references: [saleId])
+  saleId    Int
+}
+
+model Sales {
+  saleId       Int      @id @default(autoincrement())
+  userId       Int
+  purchaseDate DateTime @default(now())
+  totalSale    Float?   @default(0)
+  items        Item[]
+  Users        Users    @relation(fields: [userId], references: [id])
 }

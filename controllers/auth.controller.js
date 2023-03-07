@@ -15,7 +15,6 @@ import {transporter} from '../mailing/mails.js'
 const prisma = new Prisma.PrismaClient();
 
 // sign up process
-
 const postSignup = async (req, res, next) => {
   // data validation
   const {error, value} = signupSchema.validate(req.body, {abortEarly:false});
@@ -26,9 +25,9 @@ const postSignup = async (req, res, next) => {
       (user) => {
         res.status(200).send(
           {
-            "status": "success",
-            "message": "signed up successfully",
-            "data": user
+            success: true,
+            message: "signed up successfully",
+            user: user
           }
         );
       }
@@ -37,8 +36,9 @@ const postSignup = async (req, res, next) => {
       (error) => {
         res.status(400).send(
           {
-            "message": "an error occured",
-            "error": error
+            success: false,
+            message: "an error occured",
+            error: error
           }
         );
       }
@@ -54,8 +54,9 @@ const postSignup = async (req, res, next) => {
     );
     res.status(400).send(
       {
-        "message": "user errors, check the data you have inserted",
-        "errors": messages
+        success: false,
+        message: "user errors, check the data you have inserted",
+        errors: messages
       }
     );
   };
@@ -69,16 +70,21 @@ const postSignin = async (req, res, next) => {
   if(!error){
     await checkEmailPassword(email, password)
     .then(
-      (id) => {
+      (user) => {
         res.status(200).json(
           {
-            "status": "success",
-            "message": "sign in success",
-            userId: id,
+            success: true,
+            message: "sign in success",
+            userId: user.id,
             token: jwt.sign(
-              {userId: id},
+              {
+                "userInfo": {
+                  "userId": user.id,
+                  "permissions": user.permissions
+                }
+              },
               process.env.jwtSecret,
-              {expiresIn: "24h"}
+              { expiresIn: "24h" }
             )
           }
         );
@@ -89,8 +95,9 @@ const postSignin = async (req, res, next) => {
         console.log(error);
         res.status(500).json(
           {
-            "message": "error",
-            "error": error
+            success: false,
+            message: 'problem occured',
+            error: error
           }
         );
       }
@@ -106,8 +113,9 @@ const postSignin = async (req, res, next) => {
     );
     res.status(400).send(
       {
-        "message ": "user errors, check the data you have inserted",
-        "errors ": messages
+        success: false,
+        message: "user errors, check the data you have inserted",
+        errors: messages
       }
     );
   }
@@ -150,18 +158,13 @@ const sendVerificationEmail = (userInDb, res) => {
           await transporter.sendMail(mailOptions)
           .then(
             async (mailSent) => {
-              console.log(mailSent);
               if(mailSent){
                 res.status(200).json(
                   {
-                    "status": "pending",
-                    "message": "verification email is sent",
-                    "id": id,
-                    "uniqueString": uniqueString,
-                    "response": {
-                      accepted: mailSent.accepted,
-                      enveloppe: mailSent.envelope,
-                    }                
+                    success: true,
+                    message: "pending! verification email is sent",
+                    id: id,
+                    uniqueString: uniqueString,
                   }
                 );
               }
@@ -169,8 +172,9 @@ const sendVerificationEmail = (userInDb, res) => {
               {
                 res.status(500).json(
                   {
-                    "status": "failed",
-                    "message": "system error, sending verification email has failed"
+                    success: false,
+                    message: "system error, sending verification email has failed",
+                    error: error
                   }
                 );
               }
@@ -181,8 +185,9 @@ const sendVerificationEmail = (userInDb, res) => {
               console.log(error);
               res.status(400).json(
                 {
-                  "status": "failed",
-                  "message": "failed to send mail"
+                    success: false,
+                    message: "failed to send mail",
+                    error: error
                 }
               );
             }
@@ -194,8 +199,9 @@ const sendVerificationEmail = (userInDb, res) => {
           console.log(error);
           res.status(500).json(
             {
-              "status": "failed",
-              "message": "error on writing in db"
+                success: false,
+                message: "error on writing in db",
+                error: error
             }
           );
         }
@@ -207,8 +213,9 @@ const sendVerificationEmail = (userInDb, res) => {
       console.log(error);
       res.status(500).json(
         {
-          "status": "failed",
-          "message": "system error hash failure"
+            success: false,
+            message: "system error, hash failure",
+            error: error 
         }
       );
     }
@@ -222,4 +229,9 @@ const signout = (req, res, next) => {
   });
 };
 
-export { postSignup, signout, postSignin, sendVerificationEmail };
+export {
+  postSignup,
+  signout,
+  postSignin,
+  sendVerificationEmail
+};
