@@ -6,15 +6,19 @@ import {
     findDrugInDb,
     deleteDrugFromDb
 } from '../models/drug.model.js';
+import {
+    createDrugSchema,
+    updateDrugSchema
+} from '../routes/dataValidation/validator.js';
 
 // create new drug
-const createDrug = async (req,res,next) => {
+export const createDrug = async (req,res,next) => {
     // get the data from request
     const data = req.body;
-    // create drug
-    await createDrugInDb(data)
-    .then(
-        drug => {
+    const {error, value} = createDrugSchema.validate(req.body, {abortEarly:false});
+    if(!error){
+        try {
+            const drug= await createDrugInDb(data);
             res.status(200).json(
                 {
                     success: true,
@@ -22,27 +26,37 @@ const createDrug = async (req,res,next) => {
                     drug: drug
                 }
             );
-        }
-    )
-    .catch(
-        (error) => {
+        } catch (error) {
             console.log('error', error);
             res.status(500).json(
                 {
                     success: false,
-                    message: 'drug update failed',
-                    error: error
+                    message: error.message,
                 }
             );
         }
-    )
+    }
+    else
+    {
+        let messages = [];
+        error.details.map(e => messages.push(e.message));
+        res.status(400).send(
+            {
+                success: false,
+                message: messages,
+            }
+        );
+    }
+    
 };
 
 // update drug
-const updateDrug = (req,res,next) => {
+export const updateDrug = (req,res,next) => {
     // new data to update with
     const data = req.body;
-    updateDrugInDb(data)
+    const {error, value} = updateDrugSchema.validate(req.body, {abortEarly:false});
+    if (!error){
+        updateDrugInDb(data)
     .then(
        (drug) => {
             res.status(200).json(
@@ -59,16 +73,60 @@ const updateDrug = (req,res,next) => {
             console.log(error);
             res.status(500).json(
                 {
-                    "message": "failed",
-                    "error": error
+                    success: false,
+                    error: error
                 }
             );
         }
     )
+    }
+    else
+    {
+        let messages = [];
+        error.details.map(e => messages.push(e.message));
+        res.status(400).send(
+            {
+                success: false,
+                message: messages,
+            }
+        );
+    }
+    
+    
 }
 
+// get all products in db
+export const getAllDrugs = async (req,res,next) => {
+    // get drugs from db 
+    await getAllDrugsFromDb()
+    .then(
+        drugs=>{
+            res.status(200).json(
+                {
+                    success: true,
+                    message: 'getting all drugs succeeded',
+                    drugs: drugs
+                }
+            );
+        }
+    )
+    .catch(
+        (error) => {
+            console.log('error', error);
+            res.status(500).json(
+                {
+                    success: false,
+                    message: 'getting all drugs failed',
+                    error: error
+                }
+            );
+        }
+    )
+
+};
+
 // get drug from db
-const getDrugById = async (req,res,next) => {
+export const getDrugById = async (req,res,next) => {
     // get the drug id from params
     const drug_id= parseInt(req.params.id);
     // get drug from db 
@@ -98,43 +156,12 @@ const getDrugById = async (req,res,next) => {
     )
 };
 
-// get all products in db
-const getAllDrugs = async (req,res,next) => {
-    // get drugs from db 
-    await getAllDrugsFromDb()
-    .then(
-        drugs=>{
-            res.status(200).json(
-                {
-                    success: true,
-                    message: 'getting all drugs succeeded',
-                    drugs: drugs
-                }
-            );
-        }
-    )
-    .catch(
-        (error) => {
-            console.log('error', error);
-            res.status(500).json(
-                {
-                    success: false,
-                    message: 'getting all drugs failed',
-                    error: error
-                }
-            );
-        }
-    )
-
-};
-
 // delete drug
-const deleteDrug = async (req,res,next) => {
+export const deleteDrug = async (req,res,next) => {
     // get the drug id from params
-    const drug_id = parseInt(req.params.id);
-    console.log(drug_id)
+    const id = parseInt(req.params.id);
     // delete product from db 
-    await deleteDrugFromDb(drug_id)
+    await deleteDrugFromDb(id)
     .then(
         drug => {
             res.status(200).json(
@@ -159,12 +186,4 @@ const deleteDrug = async (req,res,next) => {
         }
     )
 
-};
-
-export { 
-    updateDrug,
-    createDrug,
-    deleteDrug,
-    getAllDrugs,
-    getDrugById
 };

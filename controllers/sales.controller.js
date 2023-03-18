@@ -6,34 +6,26 @@ import {addSaleInDb,
 
 
 export const addSale = async (req, res, next) => {
-    // get the data from request(userId, drugId, quantity, purchaseDate)
     const data = req.body;
-    console.log(data);
-    // create product 
-    await addSaleInDb(data)
-    .then(
-        sale => {
-            res.status(200).json(
-                {
-                    succes: true,
-                    message: 'sale creation success',
-                    sale: sale
-                }
-            );
-        }
-    )
-    .catch(
-        (error) => {
-            console.log('error', error);
-            res.status(500).json(
-                {
-                    success: false,
-                    message: 'system error',
-                    error: error
-                }
-            );
-        }
-    )
+    try {
+        const sale = await addSaleInDb(data);
+        res.status(200).json(
+            {
+                succes: true,
+                message: 'sale creation success',
+                sale: sale
+            }
+        );
+    } 
+    catch (error) {
+        console.log('error', error);
+        res.status(500).json(
+            {
+                success: false,
+                message: error.message,
+            }
+        );
+    }
 }
 
 
@@ -41,26 +33,13 @@ export const getSales = async (req, res, next) => {
     await getSalesFromDb()
     .then(
         async sales => {
-            if(Object.keys(sales).length > 0){
-                res.status(200).json(
-                    {
-                        succes: true,
-                        message: 'sales retreived successfully',
-                        sales: sales
-                    }
-                );
-            }
-            else
-            {
-                res.status(200).json(
-                    {
-                        succes: true,
-                        message: 'no sales in db',
-                        sales: sales
-                    }
-                );
-            }
-            
+            res.status(200).json(
+                {
+                    succes: true,
+                    message: 'sales retreived successfully',
+                    sales: sales
+                }
+            ); 
         }
     )
     .catch(
@@ -69,8 +48,7 @@ export const getSales = async (req, res, next) => {
             res.status(500).json(
                 {
                     success: false,
-                    message: 'system error',
-                    error: error
+                    message: error.message,
                 }
             );
         }
@@ -82,25 +60,13 @@ export const getSalesByUserId = async (req, res, next) => {
     await getSalesByUserIdFromDb(userId)
     .then(
         sales => {
-            if(Object.keys(sales).length > 0){ 
-                res.status(200).json(
-                    {
-                        succes: true,
-                        message: 'sales retreived successfully',
-                        sales: sales
-                    }
-                )
-            }
-            else
-            {
-                res.status(200).json(
-                    {
-                        success: true,
-                        message: 'there is no sale',
-                        sales: sales
-                    }
-                );
-            }
+            res.status(200).json(
+                {
+                    succes: true,
+                    message: 'sales retreived successfully',
+                    sales: sales
+                }
+            )
         }
     )
     .catch(
@@ -109,8 +75,7 @@ export const getSalesByUserId = async (req, res, next) => {
             res.status(500).json(
                 {
                     success: false,
-                    message: 'system error',
-                    error: error
+                    message: error.message,
                 }
             );
         }
@@ -119,32 +84,17 @@ export const getSalesByUserId = async (req, res, next) => {
 
 
 export const getSalesByDate = async (req, res, next) => {
-    const purchaseDate = (req.body.purchaseDate).toString();
-    console.log(purchaseDate);
-    // create product 
+    const purchaseDate = req.body.purchaseDate;
     await getSalesByDateFromDb(purchaseDate)
     .then(
         sales => {
-            if(sales){ 
-                console.log(Object.keys(sales).length);
-                res.status(200).json(
-                    {
-                        succes: true,
-                        message: 'sales retreived successfully',
-                        sales: sales
-                    }
-                );
-            }
-            else
-            {
-                res.status(200).json(
-                    {
-                        succes: true,
-                        message: 'there is no sale',
-                        
-                    }
-                );
-            }
+            res.status(200).json(
+                {
+                    succes: true,
+                    message: 'sales retreived successfully',
+                    sales: sales
+                }
+            );
         }
     )
     .catch(
@@ -153,8 +103,7 @@ export const getSalesByDate = async (req, res, next) => {
             res.status(500).json(
                 {
                     success: false,
-                    message: 'system error',
-                    error: error
+                    message: error.message,
                 }
             );
         }

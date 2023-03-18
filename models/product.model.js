@@ -2,36 +2,34 @@ import Prisma from '@prisma/client';
 const prisma = new Prisma.PrismaClient();
 
 // create new product in DB
-const createProductInDb = (data) => {
-    return new Promise(
-        async (resolve,reject) => {
-            // create product
-            await prisma.products.create(
-                {
-                    data: {
-                        name: data.name,
-                        image: data.image,
-                        price: data.price,
-                        description: data.description,
-                        category: data.category
-                    }
+const createProductInDb = async (data) => {
+    return (
+        // create product
+        await prisma.products.create(
+            {
+                data: {
+                    name: data.name,
+                    image: data.image,
+                    price: data.price,
+                    description: data.description,
+                    category: data.category
                 }
-            )
-            .then(
-                async product => {
-                    console.log(product)
-                    await prisma.$disconnect();
-                    resolve(product);
-                }
-            )
-            .catch(
-                async (error) => {
-                    console.log(error);
-                    await prisma.$disconnect();
-                    reject(error );
-                }
-            )  
-        }
+            }
+        )
+        .then(
+            async product => {
+                console.log(product)
+                await prisma.$disconnect();
+                return product ;
+            }
+        )
+        .catch(
+            async (error) => {
+                console.log(error);
+                await prisma.$disconnect();
+                throw new Error(error );
+            }
+        )
     )
 };
 

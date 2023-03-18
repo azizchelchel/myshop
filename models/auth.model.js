@@ -6,167 +6,132 @@ import {allPermissions} from './permissions.model.js'
 const prisma = new Prisma.PrismaClient();
 
 // check for user in db and insert it or reject error
-export const checkAndInsertUser = (user,res) => {
-  return new Promise(
-    (resolve, reject) => {
-      // controll uniqueness of phone number
-      prisma.Users.findUnique(
+export const checkAndInsertUser = async (user,res) => {
+  try {
+    // control of uniqueness of phone number
+    const userByPhoneNumber = await prisma.Users.findUnique(
+      {
+        where: {
+          phoneNumber:{
+            countryCode: user.countryCode,
+            number: user.number
+          }
+        }
+      }
+    );
+    if(userByPhoneNumber){
+      await prisma.$disconnect();
+      throw new Error("this phone number is in use, try another.");
+    }
+    else
+    {
+      //control uniqueness of email
+      const userByEmail = await prisma.Users.findUnique(
         {
           where: {
-            phoneNumber:{
-              countryCode: user.countryCode,
-              number: user.number
+              email: user.email,
+          }
+        }
+      );
+      if(userByEmail){
+        await prisma.$disconnect();
+        throw new Error("this email is in use, try another.");
+      }
+      else
+      {
+        // hash the password
+        const hashedPassword = await bcrypt.hash(user.password, 10);
+        console.log(hashedPassword);
+        if(hashedPassword){
+          const newUser = await prisma.Users.create(
+            {
+              data: {
+                fname: user.fname,
+                lname: user.lname,
+                countryCode: user.countryCode,
+                number: user.number,
+                email: user.email,
+                address: user.address,
+                password: hashedPassword,
+                permissions: allPermissions
+              }
+            }
+          );
+          if(newUser){
+            // send a verification email
+            try {
+              const result= await sendVerificationEmail(newUser,res);
+              if (result) return result
+            } 
+            catch (error) {
+              await prisma.$disconnect();
+              throw new Error('sending verification email failed');
             }
           }
         }
-      )  
-      .then(
-        async (foundUser) => {
-          if (foundUser) {
-            await prisma.$disconnect();
-            reject("this phone number is in use, try another.");
-          }
-          else
-          {
-            // control uniqueness of email
-            prisma.Users.findUnique(
-              {
-                where: {
-                    email: user.email,
-                }
-              }
-            )
-            .then(
-              async (foundUser) => {
-                if (foundUser) {
-                  await prisma.$disconnect();
-                  reject("this email is in use, try another.");
-                }
-                else
-                {
-                  console.log(user.password);
-                  // hash the password
-                  bcrypt.hash(user.password, 10, (error,hashedPassword) => {
-                    if (error){
-                      console.log(error);
-                      prisma.$disconnect();
-                      reject('system error, hash failure')
-                    }
-                    else
-                    {
-                      prisma.Users.create(
-                        {
-                          data: {
-                            fname: user.fname,
-                            lname: user.lname,
-                            countryCode: user.countryCode,
-                            number: user.number,
-                            email: user.email,
-                            address: user.address,
-                            password: hashedPassword,
-                            permissions: allPermissions
-                          }
-                        }
-                      )
-                      .then(
-                        (userInDb) => {
-                          // send a verification email
-                          sendVerificationEmail(userInDb,res);
-                        }
-                      )
-                      .catch(
-                        async (error) => {
-                          console.log("can't save in db " + error);
-                          await prisma.$disconnect();
-                          reject("can't save record in DB.");
-                        }
-                      );
-                    } 
-                  }
-                  )    
-                }
-              }
-            )
-            .catch(
-              async (error) => {
-                console.error(error);
-                await prisma.$disconnect();
-                res.status(500).json(
-                  {
-                    "status": "failed",
-                    "message": "system error, db error"
-                  }
-                )
-              }
-            )
-          }
-        }
-      )
-      .catch(
-        async (error) => {
-          console.log(error);
-          prisma.$disconnect();
-          reject("system error, findUnique failed")
-        }
-      )
+      }
     }
-  );
+  } 
+  catch (error) {
+    await prisma.$disconnect();
+    throw error;
+  }
 };
 
-// check if email exists 
-export const checkEmailPassword = (email, password) => {
-  // check if email exists -->| yes---->hash password & compare to password stored in db
-  //                          | no----> error  not signed in yet  
-  return new Promise(
-    async (resolve, reject) => {
-      await prisma.Users.findUnique({ where: {email: email} })
-      .then(
-        async (foundUser) => {
-          if (foundUser) {
-            //  email exists in DB, lets compare passwords
-            let hashedPassword = foundUser.password;
-            await bcrypt.compare(password, hashedPassword)
-            .then(
-              async (same) => {
-                if (same) {
-                  console.log('the password is correct');
-                  await prisma.$disconnect();
-                  resolve(foundUser);
-                }
-                else
-                {
-                  console.log('password incorrect');
-                  await prisma.$disconnect();
-                  reject("email or password incorrect, retry");
-                }
-              }
-            )
-            .catch(
-              async (error) => {
-                console.log(error);
-                await prisma.$disconnect();
-                reject("system error, bcrypt comparison operation has failed");
-              }
-            );
-          }
-          else
-          {
-            // email not found in DB
-            console.log("email incorrect");
-            await prisma.$disconnect();
-            reject("email or password incorrect, retry");
-          }
-        }
-      )
-      .catch(
-        async (error) => {
-          console.error("internal system error " + error);
-          await prisma.$disconnect();
-          reject("db unrequestable");
-        }
-      );
+// create user veritfication
+export const createUserVerif = async (hashedUniqueString, id) => {
+  return await prisma.Userverifications.create(
+    {
+      data: {
+        userId: parseInt(id),
+        uniqueString: hashedUniqueString,
+        createdAt: new Date(),
+        expiresAt: new Date(new Date().getTime()+(24*60*60*1000))
+      }
     }
-  );
+  )
+  .then(
+    async (newVerif) => {
+      await prisma.$disconnect();
+      return newVerif;
+    }
+  )
+  .catch(
+    async (error) => {
+      console.log(error);
+      await prisma.$disconnect();
+      throw error;
+    }
+  )
+}
+
+// check if email exists 
+export const checkEmailPassword = async (email, password) => {
+  try {
+    const userByEmail = await prisma.Users.findUnique({ where: {email: email} });
+    if(userByEmail){
+      //  email exists in DB, lets compare passwords
+      let hashedPassword = userByEmail.password;
+      const same = await bcrypt.compare(password, hashedPassword);
+      if(same){
+        await prisma.$disconnect();
+        return foundUser;
+      }
+      else
+      {
+        await prisma.$disconnect();
+        throw new Error ("email or password incorrect, retry");
+      }
+    }
+    else{
+      await prisma.$disconnect();
+      throw new Error ("email or password incorrect.");
+    }
+  } catch (error) {
+    console.log(error);
+    await prisma.$disconnect();
+    throw error;
+  }
 };
 
 // verifying userId and unique string recieved in request
@@ -200,7 +165,7 @@ export const emailVerification = async (req, res, next) => {
                 await prisma.Users.update(
                   {
                     where: {
-                      userId: parseInt(userId)
+                      id: parseInt(userId)
                     },
                     data: {
                       isDeleted: true
