@@ -3,7 +3,7 @@ export const updatePermissions = (req,res,next) => {
     const userId = req.params.id;
     // new data to update with
     const data = req.body;
-    updatePermissions(data, userId)
+    return updatePermissions(data, userId)
     .then(
        (permissions) => {
             res.status(200).json(

@@ -2,169 +2,136 @@ import Prisma from '@prisma/client';
 const prisma = new Prisma.PrismaClient();
 
 // create new product in DB
-const createDrugInDb = (data) => {
-    return new Promise(
-        async (resolve,reject) => {
-            // create product
-            await prisma.drug.create(
-                {
-                    data: {
-                        forme: data.forme,
-                        libelle: data.libelle,
-                        libelle_court: data.libelle_court                        
-                    }
+export const createDrugInDb = async (data) => {
+    // create product
+    try {
+        const drug = await prisma.drug.create(
+            {
+                data: {
+                    forme: data.forme,
+                    libelle: data.libelle,
+                    libelle_court: data.libelle_court,
+                    price: data.price                     
                 }
-            )
-            .then(
-                async drug => {
-                    console.log(drug)
-                    await prisma.$disconnect();
-                    resolve(drug);
-                }
-            )
-            .catch(
-                async (error) => {
-                    console.log(error);
-                    console.log("ddd");
-                    await prisma.$disconnect();
-                    reject(error );
-                }
-            )  
+            }
+        );
+        if(drug){
+            console.log(drug)
+            await prisma.$disconnect();
+            return drug;
         }
-    )
+    } 
+    catch (error) {
+        console.log(error);
+        await prisma.$disconnect();
+        throw new Error("internal system error, create error");
+    }
 };
 
 // update drug
-
-const updateDrugInDb = (data) => {
-    return new Promise (
-        async (resolve, reject) => {
-            await prisma.drug.update(
-                {
-                    where: {
-                        drug_id: parseInt(data.drug_id)
-                    },
-                    data: {
-                        forme: data.forme,
-                        libelle: data.libelle,
-                        libelle_court: data.libelle_court,
-                    }
+export const updateDrugInDb = async (data) => {
+    try {
+        const updatedDrug = await prisma.drug.update(
+            {
+                where: {
+                    id: parseInt(data.id)
+                },
+                data: {
+                    forme: data.forme,
+                    libelle: data.libelle,
+                    libelle_court: data.libelle_court,
+                    price: data.price
                 }
-            )
-            .then(
-                async (updatedDrug) => {
-                    await prisma.$disconnect();
-                    resolve(updatedDrug);
-                }
-            )
-            .catch(
-                async (error) => {
-                    console.log(error);
-                    await prisma.$disconnect();
-                    reject('system error update failed');
-                }
-            )
-        }
-    )
+            }
+        );
+        await prisma.$disconnect();
+        return updatedDrug; 
+    } 
+    catch (error) {
+        console.log(error);
+        await prisma.$disconnect();
+        throw error;
+    }
 }
 
 // find all the drugs
-const getAllDrugsFromDb = () => {
-    return new Promise(
-        async (resolve,reject) => {
-            // return all drugs
-            await prisma.drug.findMany(
-                {
-                    where: {isDeleted: false}
-                }
-            )
-            .then(
-                drugs => {
-                    prisma.$disconnect();
-                    resolve(drugs);
-                }
-            )
-            .catch(
-                async (error) => {
-                    console.log(error);
-                    await prisma.$disconnect();
-                    reject(error );
-                }
-            )  
+export const getAllDrugsFromDb = async () => {
+    // return all drugs
+    return await prisma.drug.findMany(
+        {
+            where: {
+                isDeleted: false
+            }
         }
     )
+    .then(
+        async drugs => {
+            await prisma.$disconnect();
+            return drugs;
+        }
+    )
+    .catch(
+        async (error) => {
+            console.log(error);
+            await prisma.$disconnect();
+            throw error;
+        }
+    )  
 };
 
 
 // find drug by id in db
-
-const findDrugInDb = (id) => {
-    return new Promise(
-        async(resolve,reject) => {
-            // find drug
-            await prisma.drug.findUnique(
-                {
-                    where: {
-                        drug_id: id
-                    }
-                }
-            )
-            .then(
-                async (drug) => {
-                    console.log(drug)
-                    await prisma.$disconnect();
-                    resolve(drug);
-                }
-            )
-            .catch(
-                async (error) => {
-                    console.log(error);
-                    await prisma.$disconnect();
-                    reject(error);
-                }
-            )  
+export const findDrugInDb = async (id) => {
+    // find drug
+    return await prisma.drug.findMany(
+        {
+            where:{
+                id,
+                isDeleted: false
+            }
         }
     )
+    .then(
+        async (drug) => {
+            await prisma.$disconnect();
+            return drug;
+        }
+    )
+    .catch(
+        async (error) => {
+            console.log(error);
+            await prisma.$disconnect();
+            throw error;
+        }
+    )  
 };
 
 // delete drug from db
-
-const deleteDrugFromDb = (id) => {
-    return new Promise(
-        async (resolve,reject) => {
-            // soft delete drug     
-            await prisma.drug.update(
-                {
-                    where: {
-                        drug_id: id
-                    },
-                    data: {
-                        isDeleted: true
-                    }
-                
-                }
-            )
-            .then(
-                async drug => {
-                    await prisma.$disconnect();
-                    resolve(drug);
-                }
-            )
-            .catch(
-                async (error) => {
-                    console.log(error);
-                    await prisma.$disconnect();
-                    reject(error );
-                }
-            )  
+export const deleteDrugFromDb = async (id) => {
+    // soft delete drug     
+    return await prisma.drug.update(
+        {
+            where: {
+                id: id,
+            },
+            data: {
+                isDeleted: true
+            }
+        
         }
     )
+    .then(
+        async drug => {
+            await prisma.$disconnect();
+            return drug;
+        }
+    )
+    .catch(
+        async (error) => {
+            console.log(error);
+            await prisma.$disconnect();
+            throw error;
+        }
+    )  
 };
 
-export  { 
-    updateDrugInDb,
-    createDrugInDb,
-    getAllDrugsFromDb,
-    deleteDrugFromDb,
-    findDrugInDb
-};

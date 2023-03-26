@@ -2,7 +2,6 @@ import Prisma from '@prisma/client';
 const prisma = new Prisma.PrismaClient();
 
 // existing permissions in DB
-
 const getAllPermissions = async () => {
     try {
         const json = await prisma.permissions.findMany({});

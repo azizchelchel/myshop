@@ -1,143 +1,91 @@
 import Prisma from '@prisma/client';
-
 const prisma = new Prisma.PrismaClient();
 
-
-export const addSaleInDb = (data) => {
-    const {userId, items} = data;
-    // calculate totalItem 
-    items.map(e => e.totalItem = parseInt(e.drugPrice) * parseInt(e.quantity)
+export const addSaleInDb = async (data) => {
+    const {id, items} = data;
+    // calculate total cost in Item 
+    items.map(drug => drug.totalItem = parseInt(drug.drugPrice) * parseInt(drug.quantity)
     );
-    // calculate totalSale
+    // calculate total cost of Sale
     let totalSale = 0;
-    items.forEach(e => totalSale = totalSale + e.totalItem);
-
-    return new Promise(
-        async (resolve,reject) => {
-            await prisma.sales.create(
-                {
-                    data: {
-                        userId,
-                        items: {
-                            create: items
-                        },
-                        totalSale: totalSale
+    items.forEach(item => totalSale = totalSale + item.totalItem);
+    try {
+        const sale = await prisma.sales.create(
+            {
+                data: {
+                    userId: id,
+                    items: {
+                        create: items
                     },
-                    include: {
-                        items: true,
-                    }  
-                }
-            )
-            .then(
-                async sale => {
-                    console.log(sale)
-                    await prisma.$disconnect();
-                    resolve(sale);
-                }
-            )
-            .catch(
-                async (error) => {
-                    console.log(error);
-                    await prisma.$disconnect();
-                    reject(error );
-                }
-        
-            )
-        }
-    )
+                    totalSale: totalSale
+                },
+                include: {
+                    items: true,
+                } 
+            }
+        );
+        await prisma.$disconnect();
+        return sale;
+    } 
+    catch (error) {
+        console.log(error);
+        await prisma.$disconnect();
+        throw error;
+    }  
+};
+
+export const getSalesFromDb = async () => {
+    try {
+        const sales = await prisma.sales.findMany()
+        await prisma.$disconnect();
+        return sales;
+    } catch (error) {
+        await prisma.$disconnect();
+        throw error;
+    }
 };
 
 
-
-export const getSalesFromDb = (userId) => {
-    return new Promise(
-        async (resolve,reject) => {
-            // create sale
-            await prisma.sales.findMany()
-            .then(
-                async sales => {
-                    if(sales){
-                        console.log(sales)
-                        await prisma.$disconnect();
-                        resolve(sales);
-                    }
-                    else
-                    {
-                        console.log("no salesin db")
-                        await prisma.$disconnect();
-                        resolve('no sales in db');
-                    }
-                    
+export const getSalesByUserIdFromDb = async (userId) => {
+    try {
+        const sales = await prisma.sales.findMany(
+            {
+                where: {
+                    userId: parseInt(userId)
                 }
-            )
-            .catch(
-                async (error) => {
-                    console.log(error);
-                    await prisma.$disconnect();
-                    reject(error );
-                }
-            )  
-        }
-    )
-};
-
-export const getSalesByUserIdFromDb = (userId) => {
-    return new Promise(
-        async (resolve,reject) => {
-            await prisma.sales.findMany(
-                {
-                    where: {
-                        userId: parseInt(userId)
-                    }
-                }
-            )
-            .then(
-                async sales => {
-                    await prisma.$disconnect();
-                    resolve(sales);
-                }
-            )
-            .catch(
-                async (error) => {
-                    console.log(error);
-                    await prisma.$disconnect();
-                    reject(error );
-                }
-            )  
-        }
-    )
+            }
+        );
+        await prisma.$disconnect();
+        return sales;
+    } 
+    catch (error) {
+        console.log(error);
+        await prisma.$disconnect();
+        throw error;
+    }
 };
 
 
-export const getSalesByDateFromDb = (purchaseDate) => {
-    return new Promise(
-        async (resolve,reject) => {
-            const toDay = new Date(purchaseDate); //purchcacseDate without time part
-            const dayAfter = new Date(toDay.getTime()); 
-            dayAfter.setDate(toDay.getDate() + 1); //purchcacseDate plus one day
-            await prisma.sales.findMany(
-                {
-                    where: {
-                        purchaseDate: {
-                            gte: toDay,
-                            lt: dayAfter
-                        }
+export const getSalesByDateFromDb = async (date) => {
+    const purchaseDate= new Date(date);
+    const pivot = new Date(date);  //date pivot for calculation
+    const dayAfter = new Date(pivot.setDate(purchaseDate.getDate() + 1));//purchase date plus one day 
+    try {
+        const sales = await prisma.sales.findMany(
+            {
+                where: {
+                    purchaseDate: {
+                        gte: purchaseDate,
+                        lt: dayAfter 
                     }
                 }
-            )
-            .then(
-                async sales => {
-                    await prisma.$disconnect();
-                    resolve(sales);
-                }
-            )
-            .catch(
-                async (error) => {
-                    console.log(error);
-                    await prisma.$disconnect();
-                    reject(error );
-                }
-            )  
-        }
-    )
+            }
+        );
+        await prisma.$disconnect();
+        return sales;
+    } catch (error) {
+        console.log(error);
+        await prisma.$disconnect();
+        throw error;
+    }     
 };

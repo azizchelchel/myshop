@@ -11,31 +11,26 @@ import {
 const createProduct = async (req,res,next) => {
     // get the data from request
     const data = req.body;
-    // create product 
-    await createProductInDb(data)
-    .then(
-        product => {
-            res.status(200).json(
-                {
-                    succes: true,
-                    message: 'pruduct creation success',
-                    product: product
-                }
-            );
-        }
-    )
-    .catch(
-        (error) => {
-            console.log('error', error);
-            res.status(500).json(
-                {
-                    success: false,
-                    message: 'system error',
-                    error: error
-                }
-            );
-        }
-    )
+    try {
+        const product = await createProductInDb(data);
+        res.status(200).json(
+            {
+                succes: true,
+                message: 'pruduct creation success',
+                productId: product.product_id
+            }
+        );
+
+    } catch (error) {
+        console.log('error', error);
+        res.status(500).json(
+            {
+                success: false,
+                message: 'system error',
+                error: error.message
+            }
+        );
+    }
 };
 
 // get product by id

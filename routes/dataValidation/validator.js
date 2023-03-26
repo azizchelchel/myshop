@@ -51,15 +51,35 @@ export const selfUpdatePasswordSchema = Joi.object(
 );
 
 // create user schema
-
 export const createUserSchema = Joi.object(
     {
+        personType: Joi.string().min(2).required(),
         fname: Joi.string().min(2).required(),
         lname: Joi.string().min(2).required(),
         countryCode: Joi.string().min(1),
         number: Joi.number().min(9).required(),
         email: Joi.string().email().required(),
         address: Joi.string().min(5).required()
+    }
+);
+
+// drug schema
+export const createDrugSchema = Joi.object(
+    {
+        forme: Joi.string().min(1).required(),
+        libelle: Joi.string().min(1).required(),
+        libelle_court: Joi.string().min(1).required(),
+        price: Joi.number().required()
+    }
+);
+// update drug schema  
+export const updateDrugSchema = Joi.object(
+    {
+        id:Joi.number().integer().positive().required(),
+        forme: Joi.string().min(1).required(),
+        libelle: Joi.string().min(1).required(),
+        libelle_court: Joi.string().min(1).required(),
+        price: Joi.number().required()
     }
 );
 
