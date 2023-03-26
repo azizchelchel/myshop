@@ -65,6 +65,7 @@ export const getSalesByUserIdFromDb = async (userId) => {
     }
 };
 
+
 export const getSalesByDateFromDb = async (date) => {
     const purchaseDate= new Date(date);
     const pivot = new Date(date);  //date pivot for calculation
