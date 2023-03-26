@@ -101,3 +101,10 @@ model Sales {
   items        Item[]
   Users        Users    @relation(fields: [userId], references: [id])
 }
+
+model AuditLog {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  event     String
+  createdAt DateTime @default(now())
+}
