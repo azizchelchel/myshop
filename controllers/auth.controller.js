@@ -6,7 +6,7 @@ import {
 import {
   signupSchema,
   signinSchema
-} from '../routes/dataValidation/validator.js';
+} from '../middlewares/dataValidation/validator.js';
 import {v4 as uuidv4} from 'uuid';
 import bcrypt from 'bcryptjs';
 import Prisma from '@prisma/client';
@@ -109,21 +109,22 @@ export const postSignin = async (req, res, next) => {
     await checkEmailPassword(email, password)
     .then(
       (user) => {
+        const token = jwt.sign(
+          {
+            "userInfo": {
+              "userId": user.id,
+              "permissions": user.permissions
+            }
+          },
+          process.env.jwtSecret,
+          { expiresIn: "24h" }
+        );
         res.status(200).json(
           {
             success: true,
             message: "sign in success",
             userId: user.id,
-            token: jwt.sign(
-              {
-                "userInfo": {
-                  "userId": user.id,
-                  "permissions": user.permissions
-                }
-              },
-              process.env.jwtSecret,
-              { expiresIn: "24h" }
-            )
+            token: token
           }
         );
       }  

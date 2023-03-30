@@ -79,7 +79,7 @@ export const getSalesByDateFromDb = async (date) => {
                         lt: dayAfter 
                     }
                 }
-<<<<<<< HEAD
+
             }
         );
         await prisma.$disconnect();
@@ -89,56 +89,38 @@ export const getSalesByDateFromDb = async (date) => {
         await prisma.$disconnect();
         throw error;
     }     
-=======
-            )
-            .then(
-                async sales => {
-                    await prisma.$disconnect();
-                    resolve(sales);
-                }
-            )
-            .catch(
-                async (error) => {
-                    console.log(error);
-                    await prisma.$disconnect();
-                    reject(error );
-                }
-            )  
-        }
-    )
 };
 
 
-export const getSalesByDateFromDb = (purchaseDate) => {
-    return new Promise(
-        async (resolve,reject) => {
-            const toDay = new Date(purchaseDate); //purchcacseDate without time part
-            const dayAfter = new Date(toDay.getTime()); 
-            dayAfter.setDate(toDay.getDate() + 1); //purchcacseDate plus one day
-            await prisma.sales.findMany(
-                {
-                    where: {
-                        purchaseDate: {
-                            gte: toDay,
-                            lt: dayAfter
-                        }
-                    }
-                }
-            )
-            .then(
-                async sales => {
-                    await prisma.$disconnect();
-                    resolve(sales);
-                }
-            )
-            .catch(
-                async (error) => {
-                    console.log(error);
-                    await prisma.$disconnect();
-                    reject(error );
-                }
-            )  
-        }
-    )
->>>>>>> f5cb91c542f47864af188c20ba8f85ffc0b26047
-};
+// export const getSalesByDateFromDb = (purchaseDate) => {
+//     return new Promise(
+//         async (resolve,reject) => {
+//             const toDay = new Date(purchaseDate); //purchcacseDate without time part
+//             const dayAfter = new Date(toDay.getTime()); 
+//             dayAfter.setDate(toDay.getDate() + 1); //purchcacseDate plus one day
+//             await prisma.sales.findMany(
+//                 {
+//                     where: {
+//                         purchaseDate: {
+//                             gte: toDay,
+//                             lt: dayAfter
+//                         }
+//                     }
+//                 }
+//             )
+//             .then(
+//                 async sales => {
+//                     await prisma.$disconnect();
+//                     resolve(sales);
+//                 }
+//             )
+//             .catch(
+//                 async (error) => {
+//                     console.log(error);
+//                     await prisma.$disconnect();
+//                     reject(error );
+//                 }
+//             )  
+//         }
+//     )
+// };

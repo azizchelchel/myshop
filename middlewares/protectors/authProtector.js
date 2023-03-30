@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
 
-const jwtProtector = (req,res,next) => { 
+export const jwtProtector = (req,res,next) => { 
     // controll headers
     const authHeader = req.headers.authorization || req.headers.Authorization
     if(!authHeader?.startsWith('Bearer ')) return res.sendStatus(401); //unauthorized
@@ -18,4 +18,3 @@ const jwtProtector = (req,res,next) => {
         }
     );  
 }
- export{jwtProtector};

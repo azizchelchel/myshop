@@ -10,7 +10,7 @@ import {
     createUserSchema,
     updateUserInfoSchema,
     selfUpdatePasswordSchema
- } from '../routes/dataValidation/validator.js';
+ } from '../middlewares/dataValidation/validator.js';
 
 // crete new user
 export const createUser = async (req,res,next) => {
