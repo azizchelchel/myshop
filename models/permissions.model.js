@@ -7,7 +7,7 @@ const getAllPermissions = async () => {
         const json = await prisma.permissions.findMany({});
         const output = json.reduce((acc, { permissionCode, permissionName }) =>
             Object.assign(acc, { [permissionName]: permissionCode }), {});
-        return output;
+        return json;
     } catch (error) {
         console.log(error);
         return null;

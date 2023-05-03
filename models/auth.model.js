@@ -115,7 +115,7 @@ export const checkEmailPassword = async (email, password) => {
       const same = await bcrypt.compare(password, hashedPassword);
       if(same){
         await prisma.$disconnect();
-        return foundUser;
+        return userByEmail;
       }
       else
       {
@@ -140,7 +140,7 @@ export const emailVerification = async (req, res, next) => {
     let {userId, uniqueString} = req.params; 
     await prisma.userverifications.findUnique(
       {
-        where: {userId: userId.toString()}
+        where: {userId: parseInt(userId)}
       }
     )
     .then(

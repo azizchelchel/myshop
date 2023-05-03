@@ -9,7 +9,7 @@ import {
 import {
     createDrugSchema,
     updateDrugSchema
-} from '../routes/dataValidation/validator.js';
+} from '../middlewares/dataValidation/validator.js';
 
 // create new drug
 export const createDrug = async (req,res,next) => {

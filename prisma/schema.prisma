@@ -35,7 +35,8 @@ model Users {
 
   permissions Json? @default("{}")
 
-  sales Sales[]
+  sales    Sales[]
+  AuditLog AuditLog[]
 
   @@unique(fields: [countryCode, number], name: "phoneNumber")
 }
@@ -100,4 +101,15 @@ model Sales {
   totalSale    Float?   @default(0)
   items        Item[]
   Users        Users    @relation(fields: [userId], references: [id])
+}
+
+// In your Prisma schema file (e.g. schema.prisma)
+
+model AuditLog {
+  id        Int      @id @default(autoincrement())
+  event     String
+  ipAddress String?
+  createdAt DateTime @default(now())
+  Users     Users?   @relation(fields: [userId], references: [id])
+  userId    Int?
 }

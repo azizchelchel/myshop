@@ -89,19 +89,21 @@ const f2 = (b)=>{
 // const a = new Date("2023-03-15");
 // console.log(new Date(a.getTime()
 
-import Joi from 'joi';
+// import Joi from 'joi';
 
 
-const schema = Joi.object({
-  myNumber: Joi.number().integer().positive().required(),
-});
+// const schema = Joi.object({
+//   myNumber: Joi.number().integer().positive().required(),
+// });
 
-const data1 = { myNumber: 5 };
-const data2 = { myNumber: 0 };
+// const data1 = { myNumber: 5 };
+// const data2 = { myNumber: 0 };
 
-console.log(schema.validate(data1)); // No errors, valid number
-console.log(schema.validate(data2)); // Error, 0 is not a positive number
+// console.log(schema.validate(data1)); // No errors, valid number
+// console.log(schema.validate(data2)); // Error, 0 is not a positive number
 
 
+import {allPermissions} from './models/permissions.model.js'
 
+// console.log(allPermissions);
 
